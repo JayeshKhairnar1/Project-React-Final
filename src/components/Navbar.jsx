@@ -12,8 +12,8 @@ import {
 } from '@mui/material';
 // menu
 import DrawerItem from './DrawerItem';
-// rotas
-import { Link } from 'react-router-dom';
+// routes
+import { Link, useLocation } from 'react-router-dom';
 
 // personalizacao
 const StyledToolbar = styled(Toolbar)({
@@ -28,7 +28,7 @@ const ListMenu = styled(List)(({ theme }) => ({
   },
 }));
 
-//rotas
+// routes
 const itemList = [
   {
     text: "Home",
@@ -53,12 +53,14 @@ const itemList = [
 ];
 
 const Navbar = () => {
+  const location = useLocation(); // Hook to get the current route
+
   return (
     <AppBar 
       component="nav" 
       position="sticky"
       sx={{ 
-        backgroundColor: 'orange', 
+        backgroundColor: 'black', 
       }}
       elevation={0}
     >
@@ -67,23 +69,29 @@ const Navbar = () => {
           variant="h6"
           component="h2"
         >
-         V-Config
+          V-Config
         </Typography>
         <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
           <DrawerItem /> 
         </Box>
         <ListMenu>
           {itemList.map((item) => {
-            const { text } = item;
+            const { text, to } = item;
+            const isActive = location.pathname === to; // Check if the current route is active
+
             return (
               <ListItem key={text}>
-                <ListItemButton component={Link} to={item.to}
+                <ListItemButton component={Link} to={to}
                   sx={{
                     color: '#fff',
                     "&:hover": {
-                      backgroundColor: 'transparent',
-                      color: '#1e2a5a',
-                    }
+                      backgroundColor: '#333', // Change hover background color
+                      color: '#f0f0f0', // Change hover text color
+                    },
+                    ...(isActive && {
+                      borderBottom: '2px solid #fff', // Add a white bottom border for the active item
+                      color: '#fff', // Ensure text color is white for the active item
+                    })
                   }}
                 >
                   <ListItemText primary={text} />

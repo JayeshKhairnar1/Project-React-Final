@@ -7,9 +7,8 @@ import {
 } from '@mui/material'
 import Title from './Title'
 // img
-import imgDetail from '../assets/pexels-alex-staudinger-1732414.jpg';
-import imgDetail2 from '../assets/pexels-pixabay-271816.jpg';
-
+import imgDetail from '../assets/maruti_swift_lxi.jpeg';
+import imgDetail2 from '../assets/maruti_swift_zxi.jpeg';
 
 const GetStarted = () => {
 
@@ -28,17 +27,14 @@ const GetStarted = () => {
     })
 
     return (
-            
         <Grid container spacing={{ xs: 4, sm: 4, md: 0 }}   
         sx={{
             py: 10,
             px: 2,
-             
         }}
         >
             <CustomGridItem item xs={12} sm={8} md={6} 
-            component = 'section'
-           
+            component='section'
             >
                 <Box component='article'
                 sx={{
@@ -47,17 +43,14 @@ const GetStarted = () => {
                 >
                     <Title
                     text={
-                        'We make it easy for tenants and landlords'
+                        'Customize Your Dream Vehicle'
                     }
                     textAlign={'start'}
                     />
                     <CustomTypography>
-                        Listing are updated continuously so you<br />
-                        won't miss out on homes that just hit<br />
-                        market until you find your perfect home.
+                        Our vehicle configurator makes it easy for you to design and customize your perfect vehicle. Explore a wide range of options and features to create a vehicle that reflects your unique style and preferences.
                     </CustomTypography> 
                 </Box>
-
             </CustomGridItem>
             
             <Grid item xs={12} sm={4} md={6}>
@@ -92,14 +85,12 @@ const GetStarted = () => {
                 >
                     <Title
                     text={
-                        'Match with the best agent'
-                        
+                        'Get Expert Assistance'
                     }
                     textAlign={'start'}
                     />
                     <CustomTypography>
-                        Our verified partner Agents are local experts who<br /> 
-                        earn an average of 4.8/5 stars from buyers and sellers.
+                        Connect with our experienced agents who are dedicated to helping you through the customization process. Our experts are here to ensure you make the best choices for your vehicle, providing you with personalized support every step of the way.
                     </CustomTypography>
                 </Box>
             </CustomGridItem>

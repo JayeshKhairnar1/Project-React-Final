@@ -9,6 +9,7 @@ import Contact from './pages/Contact';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer/Footer';
 
+
 function App() {
   return (
     <>

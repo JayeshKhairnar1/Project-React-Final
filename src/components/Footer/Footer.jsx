@@ -45,22 +45,20 @@ const Footer = () => {
       <StackColumn>
         <FooterTitle text={'address'} />
         <FooterLink 
-        text={'15th Louis St, london 92382, eng'} 
+        text={'SM VITA, Gulmohar Road, MHADA Colony, Vile Parle West, Mumbai, Maharashtra 400049'} 
         />
+        
         <FooterLink 
-        text={'25 999-345-10800'} 
-        />
-        <FooterLink 
-        text={'info@housesales.com'} 
+        text={'training@vidyanidhi.com'} 
         />
       </StackColumn>
       
       <StackColumn>
         <FooterTitle text={'our services'} />
-        <FooterLink text={'buy house'} />
-        <FooterLink text={'sell house'} />
-        <FooterLink text={'rent house'} />
-        <FooterLink text={'build house'} />
+        <FooterLink text={'Configure'} />
+        <FooterLink text={'Bulk Purchase'} />
+        <FooterLink text={'Collab'} />
+        <FooterLink text={''} />
       </StackColumn>
       <StackColumn>
         <FooterTitle text={'our company'} />
@@ -70,7 +68,7 @@ const Footer = () => {
       </StackColumn>
 
       <StackColumn>
-        <FooterTitle text={'hBSales'} />
+        <FooterTitle text={'V-Config'} />
         <Stack 
         direction='row' 
         width= '70px'
@@ -102,7 +100,7 @@ const Footer = () => {
         variant='caption'
         component='p' 
         >
-          &copy; 2022 HBSales Inc.
+          &copy; 2024 V-Config Inc.
         </Typography>
       </StackColumn>
     </BoxRow>
