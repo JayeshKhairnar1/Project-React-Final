@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import bg001 from '../assets/Login Page Images/log.jpg';
-
 
 const LoginPage = () => {
   const styles = {
@@ -58,11 +57,36 @@ const LoginPage = () => {
     formButtonHover: {
       backgroundColor: '#45a049'
     },
-    subImage: {
-      position: 'absolute',
-      bottom: '-20px',
-      right: '-20px',
-      width: '100px'
+    error: {
+      color: 'red',
+      marginTop: '10px'
+    }
+  };
+
+  const [userid, setUserid] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/user/login?userid=${userid}&password=${password}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        window.location.href = '/dropDownPage'; // Redirect to dropdownpage page upon successful login
+      } else {
+        const result = await response.text();
+        setError(result);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('An error occurred during login.');
     }
   };
 
@@ -73,19 +97,43 @@ const LoginPage = () => {
           <div style={styles.formHead}>
             <h2>Welcome Back!</h2>
           </div>
-          <div style={styles.formGroup}>
-            <label>Userd ID:</label>
-            <input type="emai" name="userId" style={styles.formControl} placeholder="Enter Userid" required />
-          </div>
-          <div style={styles.formGroup}>
-            <label>Password:</label>
-            <input type="password" name="password" style={styles.formControl} placeholder="Enter Password" required />
-          </div>
-          
-          <div style={styles.formGroup}>
-            <button style={styles.formButton}>Login</button>
-          </div>
-          
+          <form onSubmit={handleLogin}>
+            <div style={styles.formGroup}>
+              <label>User ID:</label>
+              <input
+                type="text"
+                name="userid"
+                style={styles.formControl}
+                placeholder="Enter User ID"
+                value={userid}
+                onChange={(e) => setUserid(e.target.value)}
+                required
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label>Password:</label>
+              <input
+                type="password"
+                name="password"
+                style={styles.formControl}
+                placeholder="Enter Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <button
+                type="submit"
+                style={styles.formButton}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = styles.formButtonHover.backgroundColor}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = styles.formButton.backgroundColor}
+              >
+                Login
+              </button>
+            </div>
+            {error && <p style={styles.error}>{error}</p>}
+          </form>
         </div>
       </section>
     </div>

@@ -17,12 +17,6 @@ const Header = () => {
       100% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.8); }
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-
     @keyframes backgroundPulse {
       0% { background-color: rgba(0, 0, 0, 0.5); }
       50% { background-color: rgba(0, 0, 0, 0.7); }
@@ -58,7 +52,7 @@ const Header = () => {
               borderRadius: '10px',
               backgroundColor: 'rgba(0, 0, 0, 0.5)', // Transparent background
               display: 'inline-block', // Ensure width fits content
-              animation: 'pulse 2s infinite' // Apply pulsing effect without border blinking
+              // Remove pulse animation from here
             }}>
               <h1 style={{ 
                 fontWeight: '700',
@@ -67,14 +61,14 @@ const Header = () => {
                 marginBottom: '1rem', // Adjusted margin
                 animation: 'glow 1.5s infinite' // Apply glowing text effect
               }}>
-                Let's configure your vehicle with us
+                Configuring Success: Streamlined Vehicle Solutions for Enterprises
               </h1>
               <p style={{ 
                 lineHeight: '1.6',
                 color: '#fff',
                 fontSize: '1.25rem', // Increase font size for paragraph
               }}>
-                Served 500+ happy customers who trust in our service.
+                Proudly serving over 500 delighted clients who place their trust in our expertise.
               </p>
             </div>
           </Col>

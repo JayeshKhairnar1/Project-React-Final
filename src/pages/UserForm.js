@@ -1,31 +1,120 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { useNavigate } from 'react-router-dom';
 import bg001 from '../assets/Login Page Images/log.jpg';
+import '../CSS/UserForm.css'; // Import the CSS file
 
 const UserForm = () => {
     const [validated, setValidated] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
-    const navigate = useNavigate(); // Initialize useNavigate
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        companyName: '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        pinCode: '',
+        state: '',
+        telephone: '',
+        gstNumber: ''
+    });
+    const navigate = useNavigate();
 
-    const handleSubmit = (event) => {
+    // Handle form submission
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            setShowAlert(true);
-            // Redirect after showing the alert
-            setTimeout(() => {
-                navigate('/AccountCreatedResponse'); // Redirect to the new route
-            }, 3000);
+            // Create JSON data from form fields
+            const data = {
+                username: formData.name,
+                address_line1: formData.addressLine1,
+                address_line2: formData.addressLine2,
+                city: formData.city,
+                company_name: formData.companyName,
+                email: formData.email,
+                gst_number: formData.gstNumber,
+                password: formData.password,
+                pin_code: formData.pinCode,
+                state: formData.state,
+                telephone: formData.telephone,
+            };
+
+            try {
+                // Post data to the backend
+                const response = await fetch('http://localhost:8080/api/user/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    setShowAlert(true);
+
+                    // Call the email sign-up API after a delay of 2 seconds
+                    setTimeout(async () => {
+                        try {
+                            const emailResponse = await fetch('http://localhost:8080/api/email/onSignUp', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ sendTo: formData.email })
+                            });
+
+                            if (emailResponse.ok) {
+                                console.log('Email sign-up successful');
+                            } else {
+                                console.error('Email sign-up failed');
+                            }
+
+                            navigate('/AccountCreatedResponse');
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }, 2000);
+                } else {
+                    // Handle errors
+                    console.error('Registration failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
         setValidated(true);
     };
 
+    // Handle form reset
     const handleReset = () => {
         setValidated(false);
         setShowAlert(false);
+        setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            companyName: '',
+            addressLine1: '',
+            addressLine2: '',
+            city: '',
+            pinCode: '',
+            state: '',
+            telephone: '',
+            gstNumber: ''
+        });
+    };
+
+    // Handle form input changes
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     useEffect(() => {
@@ -33,31 +122,36 @@ const UserForm = () => {
             const timer = setTimeout(() => {
                 setShowAlert(false);
             }, 3000);
-
-            return () => clearTimeout(timer); // Clean up timer on unmount
+            return () => clearTimeout(timer);
         }
     }, [showAlert]);
 
     return (
-        <Container fluid style={{
-            padding: '2rem 1rem',
-            backgroundImage: `url(${bg001})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            minHeight: '100vh',
-            backgroundAttachment: 'fixed'
-        }}>
+        <Container fluid className="container-fluid-custom" style={{ backgroundImage: `url(${bg001})` }}>
             <Row className="justify-content-center">
-                <Col md={8} lg={6} style={{ marginBottom: '1rem' }}>
-                    <Form noValidate validated={validated} onSubmit={handleSubmit} style={{
-                        width: '100%',
-                        backgroundColor: '#f8f9fa',
-                        padding: '2rem',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
-                    }}>
+                <Col md={8} lg={6} className="mb-4">
+                    <Form noValidate validated={validated} onSubmit={handleSubmit} className="form-custom">
                         <h2 className="text-center mb-4">User Registration</h2>
-                        {/* Top Section: Email, Password, and Confirm Password */}
+                        {/* Top Section: Name, Email, Password, and Confirm Password */}
+                        <Row className="mb-4">
+                            <Col md={12}>
+                                <Form.Group controlId="formName">
+                                    <Form.Label>Name</Form.Label>
+                                    <Form.Control 
+                                        type="text" 
+                                        placeholder="Enter name" 
+                                        required 
+                                        className="form-control-custom"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        Please provide a valid name.
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                        </Row>
                         <Row className="mb-4">
                             <Col md={12}>
                                 <Form.Group controlId="formEmail">
@@ -66,7 +160,10 @@ const UserForm = () => {
                                         type="email" 
                                         placeholder="Enter email" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
                                     />
                                     <Form.Control.Feedback type="invalid">
                                         Please provide a valid email address.
@@ -82,7 +179,10 @@ const UserForm = () => {
                                         type="password" 
                                         placeholder="Enter password" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
                                     />
                                     <Form.Control.Feedback type="invalid">
                                         Please provide a password.
@@ -96,7 +196,10 @@ const UserForm = () => {
                                         type="password" 
                                         placeholder="Confirm password" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
                                     />
                                     <Form.Control.Feedback type="invalid">
                                         Password confirmation is required.
@@ -113,7 +216,10 @@ const UserForm = () => {
                                         type="text" 
                                         placeholder="Enter company name" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="companyName"
+                                        value={formData.companyName}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                                 <Form.Group controlId="formAddressLine1" className="mb-3">
@@ -122,7 +228,10 @@ const UserForm = () => {
                                         type="text" 
                                         placeholder="Enter address line 1" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="addressLine1"
+                                        value={formData.addressLine1}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                                 <Form.Group controlId="formCity" className="mb-3">
@@ -131,7 +240,10 @@ const UserForm = () => {
                                         type="text" 
                                         placeholder="Enter city" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                                 <Form.Group controlId="formPinCode" className="mb-3">
@@ -140,7 +252,10 @@ const UserForm = () => {
                                         type="text" 
                                         placeholder="Enter pin code" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="pinCode"
+                                        value={formData.pinCode}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                             </Col>
@@ -150,7 +265,10 @@ const UserForm = () => {
                                     <Form.Control 
                                         type="text" 
                                         placeholder="Enter address line 2" 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="addressLine2"
+                                        value={formData.addressLine2}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                                 <Form.Group controlId="formState" className="mb-3">
@@ -159,16 +277,22 @@ const UserForm = () => {
                                         type="text" 
                                         placeholder="Enter state" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                                 <Form.Group controlId="formTelephone" className="mb-3">
                                     <Form.Label>Telephone</Form.Label>
                                     <Form.Control 
                                         type="text" 
-                                        placeholder="Enter telephone number" 
+                                        placeholder="Enter telephone" 
                                         required 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        className="form-control-custom"
+                                        name="telephone"
+                                        value={formData.telephone}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                                 <Form.Group controlId="formGstNumber" className="mb-3">
@@ -176,49 +300,35 @@ const UserForm = () => {
                                     <Form.Control 
                                         type="text" 
                                         placeholder="Enter GST number" 
-                                        style={{ borderRadius: '4px', borderColor: '#ced4da' }}
+                                        required 
+                                        className="form-control-custom"
+                                        name="gstNumber"
+                                        value={formData.gstNumber}
+                                        onChange={handleChange}
                                     />
                                 </Form.Group>
                             </Col>
                         </Row>
                         <Row className="text-center">
                             <Col>
-                                <Button 
-                                    variant="dark" 
-                                    type="submit"
-                                    className="me-2"
-                                >
-                                    Submit
+                                <Button type="submit" variant="primary" className="form-button-custom">
+                                    Register
                                 </Button>
-                                <Button 
-                                    variant="secondary" 
-                                    type="reset"
-                                    onClick={handleReset}
-                                >
+                                <Button type="reset" variant="secondary" className="form-button-custom" onClick={handleReset}>
                                     Reset
                                 </Button>
                             </Col>
                         </Row>
                     </Form>
+                    <Alert 
+                        show={showAlert} 
+                        variant="success" 
+                        className="form-alert-custom"
+                    >
+                        Registration successful!
+                    </Alert>
                 </Col>
             </Row>
-            {showAlert && (
-                <Alert variant="success" onClose={() => setShowAlert(false)} dismissible style={{
-                    position: 'fixed',
-                    bottom: '1rem',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    border: '1px solid #218838',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                    zIndex: 1050
-                }}>
-                    <Alert.Heading>Form Submitted Successfully</Alert.Heading>
-                </Alert>
-            )}
         </Container>
     );
 };
