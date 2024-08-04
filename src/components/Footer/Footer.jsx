@@ -1,110 +1,58 @@
-import React from 'react'
-import { 
-  Box, 
-  Stack, 
-  styled, 
-  Typography,
-} from '@mui/material'
-import Link from '@mui/material/Link';
-import FooterTitle from './FooterTitle'
-import FooterLink from './FooterLink'
-import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
+import React from 'react';
+import { Container, Row, Col,  Nav } from 'react-bootstrap';
+
 
 const Footer = () => {
+ 
 
-  const StackColumn = styled(Stack) (() => ({
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flex: 1,
-    gap: 8,
-    textAlign: 'center',
-  }));
-
-  const BoxRow = styled(Box) (({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'row',
-    backgroundColor: '#ededed',
-    flex: 1,
-    [theme.breakpoints.down('sm')]: {
-      flexDirection: 'column',
-      gap: 30,
-    }
-  }));
 
   return (
-    
-    <BoxRow 
-    component = 'footer'
-    sx={{
-      py: 4,
-      px: 2,
-    }}
+    <footer
+      style={{
+        backgroundColor: '#f8f9fa',
+        padding: '2rem 0',
+        borderTop: '1px solid #dee2e6',
+      }}
     >
-      <StackColumn>
-        <FooterTitle text={'address'} />
-        <FooterLink 
-        text={'SM VITA, Gulmohar Road, MHADA Colony, Vile Parle West, Mumbai, Maharashtra 400049'} 
-        />
-        
-        <FooterLink 
-        text={'training@vidyanidhi.com'} 
-        />
-      </StackColumn>
-      
-      <StackColumn>
-        <FooterTitle text={'our services'} />
-        <FooterLink text={'Configure'} />
-        <FooterLink text={'Bulk Purchase'} />
-        <FooterLink text={'Collab'} />
-        <FooterLink text={''} />
-      </StackColumn>
-      <StackColumn>
-        <FooterTitle text={'our company'} />
-        <FooterLink text={'reporting'} />
-        <FooterLink text={'get in touch'} />
-        <FooterLink text={'management'} />
-      </StackColumn>
+      <Container>
+        <Row>
+          <Col md={3} className="text-center text-md-left mb-4 mb-md-0">
+            <h5 style={{ fontWeight: '700', color: '#1c2859' }}>Address</h5>
+            <p style={{ color: '#6c757d' }}>
+              SM VITA, Gulmohar Road, MHADA Colony, Vile Parle West, Mumbai, Maharashtra 400049
+            </p>
+            <p style={{ color: '#6c757d' }}>training@vidyanidhi.com</p>
+          </Col>
+          <Col md={3} className="text-center text-md-left mb-4 mb-md-0">
+            <h5 style={{ fontWeight: '700', color: '#1c2859' }}>Our Services</h5>
+            <Nav className="flex-column">
+              <Nav.Link href="#" style={{ color: '#6c757d' }}>Configure</Nav.Link>
+              <Nav.Link href="#" style={{ color: '#6c757d' }}>Bulk Purchase</Nav.Link>
+              <Nav.Link href="#" style={{ color: '#6c757d' }}>Collab</Nav.Link>
+            </Nav>
+          </Col>
+          <Col md={3} className="text-center text-md-left mb-4 mb-md-0">
+            <h5 style={{ fontWeight: '700', color: '#1c2859' }}>Our Company</h5>
+            <Nav className="flex-column">
+              <Nav.Link href="#" style={{ color: '#6c757d' }}>Reporting</Nav.Link>
+              <Nav.Link href="#" style={{ color: '#6c757d' }}>Get in Touch</Nav.Link>
+              <Nav.Link href="#" style={{ color: '#6c757d' }}>Management</Nav.Link>
+            </Nav>
+          </Col>
+          <Col md={3} className="text-center text-md-left">
+            <h5 style={{ fontWeight: '700', color: '#1c2859' }}>V-Config</h5>
+            <Nav className="d-flex justify-content-center">
+              <Nav.Link href="#" style={{ color: '#6c757d' }}><i className="bi bi-facebook"></i></Nav.Link>
+              <Nav.Link href="#" style={{ color: '#6c757d' }}><i className="bi bi-instagram"></i></Nav.Link>
+            </Nav>
+            <p style={{ color: '#6c757d', marginTop: '1rem' }}>
+              &copy; 2024 V-Config Inc.
+            </p>
+          </Col>
+        </Row>
+      </Container>
+    </footer>
+  );
+};
 
-      <StackColumn>
-        <FooterTitle text={'V-Config'} />
-        <Stack 
-        direction='row' 
-        width= '70px'
-        maxWidth='100%'
-        justifyContent='space-between'
-        >
-          <Link href="#" variant="body2" 
-          sx={{
-            color: '#414141',
-            "&:hover": {
-              color: '#1c2859',
-            }
-          }}
-          >
-            <InstagramIcon />  
-          </Link> 
-          <Link href="#"variant="body2" 
-          sx={{
-            color: '#414141',
-            "&:hover": {
-              color: '#1c2859',
-            }
-          }}
-          >
-            <FacebookIcon />
-          </Link> 
-        </Stack>
-        <Typography 
-        variant='caption'
-        component='p' 
-        >
-          &copy; 2024 V-Config Inc.
-        </Typography>
-      </StackColumn>
-    </BoxRow>
-  )
-}
-
-export default Footer
+export default Footer;

@@ -1,108 +1,55 @@
 import React from 'react';
-import {
-  AppBar,
-  Toolbar,
-  Box,
-  List,
-  ListItem,
-  Typography, 
-  styled,
-  ListItemButton,
-  ListItemText,
-} from '@mui/material';
-// menu
-import DrawerItem from './DrawerItem';
-// routes
+import { Navbar, Nav, Container } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
 
-// personalizacao
-const StyledToolbar = styled(Toolbar)({
-  display: 'flex',
-  justifyContent: 'space-between',
-});
-
-const ListMenu = styled(List)(({ theme }) => ({
-  display: 'none',
-  [theme.breakpoints.up("sm")]: {
-    display: "flex",
-  },
-}));
-
-// routes
-const itemList = [
-  {
-    text: "Home",
-    to: "/" 
-  },
-  {
-    text: "About",
-    to: "/about"
-  },
-  {
-    text: "Contact",
-    to: "/contact"
-  },
-  {
-    text: "Login",
-    to: "/login"
-  },
-  {
-    text: "Register",
-    to: "/register"
-  }
-];
-
-const Navbar = () => {
+// Navbar component
+const CustomNavbar = () => {
   const location = useLocation(); // Hook to get the current route
 
+  const itemList = [
+    { text: 'Home', to: '/' },
+    { text: 'About', to: '/about' },
+    { text: 'Contact', to: '/contact' },
+    { text: 'Login', to: '/login' },
+    { text: 'Register', to: '/register' }
+  ];
+
   return (
-    <AppBar 
-      component="nav" 
-      position="sticky"
-      sx={{ 
-        backgroundColor: 'black', 
-      }}
-      elevation={0}
-    >
-      <StyledToolbar>
-        <Typography
-          variant="h6"
-          component="h2"
-        >
+    <Navbar bg="dark" variant="dark" sticky="top">
+      <Container>
+        <Navbar.Brand as={Link} to="/">
           V-Config
-        </Typography>
-        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-          <DrawerItem /> 
-        </Box>
-        <ListMenu>
-          {itemList.map((item) => {
-            const { text, to } = item;
-            const isActive = location.pathname === to; // Check if the current route is active
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="ms-auto">
+            {itemList.map((item) => {
+              const { text, to } = item;
+              const isActive = location.pathname === to; // Check if the current route is active
 
-            return (
-              <ListItem key={text}>
-                <ListItemButton component={Link} to={to}
-                  sx={{
-                    color: '#fff',
-                    "&:hover": {
-                      backgroundColor: '#333', // Change hover background color
-                      color: '#f0f0f0', // Change hover text color
-                    },
-                    ...(isActive && {
-                      borderBottom: '2px solid #fff', // Add a white bottom border for the active item
-                      color: '#fff', // Ensure text color is white for the active item
-                    })
+              return (
+                <Nav.Link
+                  key={text}
+                  as={Link}
+                  to={to}
+                  style={{
+                    color: isActive ? '#fff' : '#ccc',
+                    borderBottom: isActive ? '2px solid #fff' : 'none',
+                    textDecoration: 'none',
+                    margin: '0 1rem', // Add margin to space out links
                   }}
+                  onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
+                  onMouseOut={(e) => e.currentTarget.style.color = isActive ? '#fff' : '#ccc'}
                 >
-                  <ListItemText primary={text} />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </ListMenu>
-      </StyledToolbar>
-    </AppBar>
+                  {text}
+                </Nav.Link>
+              );
+            })}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
-}
+};
 
-export default Navbar;
+export default CustomNavbar;
