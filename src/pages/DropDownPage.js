@@ -1,70 +1,95 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Dropdown, DropdownButton, Row, Col, Button } from 'react-bootstrap';
+import { Container, Form, Row, Col, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import '../CSS/DropDownPage.css'; // Import the CSS file if needed
 
 const DropdownPage = () => {
+    const navigate = useNavigate(); // Initialize navigate function
     const [selectedSegment, setSelectedSegment] = useState(null);
     const [selectedManufacturer, setSelectedManufacturer] = useState(null);
-    const [selectedVariant, setSelectedVariant] = useState(null);
-    const [selectedQuantity, setSelectedQuantity] = useState(null);
+    const [selectedModel, setSelectedModel] = useState(null);
+    const [minQty, setMinQty] = useState(null);
+    const [quantity, setQuantity] = useState('');
     const [segments, setSegments] = useState([]);
     const [manufacturers, setManufacturers] = useState([]);
-    const [variants, setVariants] = useState([]);
-    const [selectedSegmentId, setSelectedSegmentId] = useState(null);
-    const [selectedManufacturerId, setSelectedManufacturerId] = useState(null);
-
-    const quantities = [1, 2, 3, 4, 5, 10];
+    const [models, setModels] = useState([]);
+    const [formData, setFormData] = useState([]);
 
     useEffect(() => {
         // Fetch segments from API
         fetch('http://localhost:8080/api/segments/')
             .then(response => response.json())
             .then(data => {
-                console.log('Fetched segments:', data); // Debugging line
                 setSegments(data);
             })
             .catch(error => console.error('Error fetching segments:', error));
     }, []);
 
     useEffect(() => {
-        if (selectedSegmentId !== null) {
-            // Fetch manufacturers based on selected segment ID
-            fetch(`http://localhost:8080/api/manufacturers/${selectedSegmentId}`)
+        if (selectedSegment) {
+            // Fetch manufacturers based on selected segment
+            fetch(`http://localhost:8080/api/manufacturers/${selectedSegment.id}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Fetched manufacturers:', data); // Debugging line
                     setManufacturers(data);
                 })
                 .catch(error => console.error('Error fetching manufacturers:', error));
         }
-    }, [selectedSegmentId]);
+    }, [selectedSegment]);
 
     useEffect(() => {
-        if (selectedSegmentId !== null && selectedManufacturerId !== null) {
-            // Fetch variants based on selected segment ID and manufacturer ID
-            fetch(`http://localhost:8080/api/models/${selectedSegmentId}/${selectedManufacturerId}`)
+        if (selectedManufacturer) {
+            // Fetch models based on selected manufacturer
+            fetch(`http://localhost:8080/api/models/${selectedSegment.id}/${selectedManufacturer.id}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Fetched variants:', data); // Debugging line
-                    setVariants(data);
+                    setModels(data);
                 })
-                .catch(error => console.error('Error fetching variants:', error));
+                .catch(error => console.error('Error fetching models:', error));
         }
-    }, [selectedSegmentId, selectedManufacturerId]);
+    }, [selectedManufacturer]);
 
     const handleSegmentSelect = (segment) => {
-        setSelectedSegment(segment.name);
-        setSelectedSegmentId(segment.id); // Set the segment ID for fetching manufacturers
-        setSelectedManufacturer(null); // Reset manufacturer selection
-        setSelectedManufacturerId(null); // Reset manufacturer ID
-        setVariants([]); // Clear variants when segment changes
-        setSelectedVariant(null); // Reset variant selection
+        setSelectedSegment(segment);
+        setSelectedManufacturer(null);
+        setSelectedModel(null);
+        setMinQty(null);
+        setQuantity('');
+        setManufacturers([]);
+        setModels([]);
     };
 
     const handleManufacturerSelect = (manufacturer) => {
-        setSelectedManufacturer(manufacturer.name);
-        setSelectedManufacturerId(manufacturer.id); // Set the manufacturer ID for fetching variants
-        setSelectedVariant(null); // Reset variant selection
+        setSelectedManufacturer(manufacturer);
+        setSelectedModel(null);
+        setMinQty(null);
+        setQuantity('');
+        setModels([]);
+    };
+
+    const handleModelSelect = (model) => {
+        setSelectedModel(model);
+        setMinQty(model.minQty); // Update minQty based on the selected model
+        setQuantity(''); // Clear quantity when model is selected
+    };
+
+    const handleNextButtonClick = () => {
+        if (quantity < minQty) {
+            alert(`Quantity should be greater than or equal to ${minQty}`);
+            return;
+        }
+
+        const data = {
+            segment: selectedSegment,
+            manufacturer: selectedManufacturer,
+            model: selectedModel,
+            quantity: quantity
+        };
+
+        setFormData(prevData => [...prevData, data]);
+
+        // Navigate to the Configure1 page
+        navigate('/Configure1');
     };
 
     return (
@@ -83,139 +108,100 @@ const DropdownPage = () => {
                 }}>
                     <Form>
                         <Form.Group controlId="segmentDropdown" className="mb-4">
-                            <DropdownButton 
-                                id="segmentDropdownButton" 
-                                title={selectedSegment || "Select Segment"} 
+                            <Form.Control 
+                                as="select" 
+                                value={selectedSegment ? selectedSegment.id : ''}
+                                onChange={(e) => {
+                                    const segment = segments.find(s => s.id === parseInt(e.target.value));
+                                    handleSegmentSelect(segment);
+                                }}
                                 style={{
                                     width: '100%',
                                     textAlign: 'center',
                                     marginBottom: '1rem',
                                     padding: '0.5rem',
-                                    borderRadius: '4px'
+                                    borderRadius: '4px',
+                                    backgroundColor: '#e7f0ff' // Blue color for dropdowns
                                 }}
                             >
+                                <option value="">Select Segment</option>
                                 {segments.map(segment => (
-                                    <Dropdown.Item 
-                                        key={segment.id} 
-                                        href="#" 
-                                        style={{
-                                            padding: '0.5rem 1rem',
-                                            textAlign: 'center'
-                                        }}
-                                        onClick={() => handleSegmentSelect(segment)}
-                                    >
+                                    <option key={segment.id} value={segment.id}>
                                         {segment.name}
-                                    </Dropdown.Item>
+                                    </option>
                                 ))}
-                            </DropdownButton>
+                            </Form.Control>
                         </Form.Group>
 
                         <Form.Group controlId="manufacturerDropdown" className="mb-4">
-                            <DropdownButton 
-                                id="manufacturerDropdownButton" 
-                                title={selectedManufacturer || "Select Manufacturer"} 
+                            <Form.Control 
+                                as="select" 
+                                value={selectedManufacturer ? selectedManufacturer.id : ''}
+                                onChange={(e) => {
+                                    const manufacturer = manufacturers.find(m => m.id === parseInt(e.target.value));
+                                    handleManufacturerSelect(manufacturer);
+                                }}
                                 style={{
                                     width: '100%',
                                     textAlign: 'center',
                                     marginBottom: '1rem',
                                     padding: '0.5rem',
-                                    borderRadius: '4px'
+                                    borderRadius: '4px',
+                                    backgroundColor: '#e7f0ff' // Blue color for dropdowns
                                 }}
+                                disabled={!selectedSegment}
                             >
-                                {manufacturers.length > 0 ? (
-                                    manufacturers.map(manufacturer => (
-                                        <Dropdown.Item 
-                                            key={manufacturer.id} 
-                                            href="#" 
-                                            style={{
-                                                padding: '0.5rem 1rem',
-                                                textAlign: 'center'
-                                            }}
-                                            onClick={() => handleManufacturerSelect(manufacturer)}
-                                        >
-                                            {manufacturer.name}
-                                        </Dropdown.Item>
-                                    ))
-                                ) : (
-                                    <Dropdown.Item 
-                                        href="#" 
-                                        style={{
-                                            padding: '0.5rem 1rem',
-                                            textAlign: 'center'
-                                        }}
-                                    >
-                                        No manufacturers available
-                                    </Dropdown.Item>
-                                )}
-                            </DropdownButton>
-                        </Form.Group>
-
-                        <Form.Group controlId="variantDropdown" className="mb-4">
-                            <DropdownButton 
-                                id="variantDropdownButton" 
-                                title={selectedVariant || "Select Variant"} 
-                                style={{
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    marginBottom: '1rem',
-                                    padding: '0.5rem',
-                                    borderRadius: '4px'
-                                }}
-                            >
-                                {variants.length > 0 ? (
-                                    variants.map(variant => (
-                                        <Dropdown.Item 
-                                            key={variant.id} 
-                                            href="#" 
-                                            style={{
-                                                padding: '0.5rem 1rem',
-                                                textAlign: 'center'
-                                            }}
-                                            onClick={() => setSelectedVariant(variant.name)}
-                                        >
-                                            {variant.name}
-                                        </Dropdown.Item>
-                                    ))
-                                ) : (
-                                    <Dropdown.Item 
-                                        href="#" 
-                                        style={{
-                                            padding: '0.5rem 1rem',
-                                            textAlign: 'center'
-                                        }}
-                                    >
-                                        No variants available
-                                    </Dropdown.Item>
-                                )}
-                            </DropdownButton>
-                        </Form.Group>
-
-                        <Form.Group controlId="quantityDropdown" className="mb-4">
-                            <DropdownButton 
-                                id="quantityDropdownButton" 
-                                title={selectedQuantity || "Select Quantity"} 
-                                style={{
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    marginBottom: '1rem',
-                                    padding: '0.5rem',
-                                    borderRadius: '4px'
-                                }}
-                            >
-                                {quantities.map(quantity => (
-                                    <Dropdown.Item 
-                                        key={quantity} 
-                                        href="#" 
-                                        style={{
-                                            padding: '0.5rem 1rem',
-                                            textAlign: 'center'
-                                        }}
-                                        onClick={() => setSelectedQuantity(quantity)}
-                                    >
-                                        {quantity}
-                                    </Dropdown.Item>
+                                <option value="">Select Manufacturer</option>
+                                {manufacturers.map(manufacturer => (
+                                    <option key={manufacturer.id} value={manufacturer.id}>
+                                        {manufacturer.name}
+                                    </option>
                                 ))}
-                            </DropdownButton>
+                            </Form.Control>
+                        </Form.Group>
+
+                        <Form.Group controlId="modelDropdown" className="mb-4">
+                            <Form.Control 
+                                as="select" 
+                                value={selectedModel ? selectedModel.id : ''}
+                                onChange={(e) => {
+                                    const model = models.find(m => m.id === parseInt(e.target.value));
+                                    handleModelSelect(model);
+                                }}
+                                style={{
+                                    width: '100%',
+                                    textAlign: 'center',
+                                    marginBottom: '1rem',
+                                    padding: '0.5rem',
+                                    borderRadius: '4px',
+                                    backgroundColor: '#e7f0ff' // Blue color for dropdowns
+                                }}
+                                disabled={!selectedManufacturer}
+                            >
+                                <option value="">Select Model</option>
+                                {models.map(model => (
+                                    <option key={model.id} value={model.id}>
+                                        {model.modName}
+                                    </option>
+                                ))}
+                            </Form.Control>
+                        </Form.Group>
+
+                        <Form.Group controlId="quantityInput" className="mb-4">
+                            <Form.Control 
+                                type="number" 
+                                placeholder={minQty ? `Enter quantity (min ${minQty})` : "Enter quantity"}
+                                value={quantity}
+                                onChange={(e) => setQuantity(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    textAlign: 'center',
+                                    marginBottom: '1rem',
+                                    padding: '0.5rem',
+                                    borderRadius: '4px'
+                                }}
+                                disabled={!selectedModel}
+                            />
                         </Form.Group>
 
                         <Button 
@@ -233,7 +219,7 @@ const DropdownPage = () => {
                                 justifyContent: 'center',
                                 alignItems: 'center'
                             }}
-                            onClick={() => alert('Button clicked!')} // Handle button click
+                            onClick={handleNextButtonClick} // Handle button click
                         >
                             <span style={{
                                 marginRight: '8px'

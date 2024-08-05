@@ -16,6 +16,7 @@ import Configure1 from './pages/Configure1';
 import Configure2 from './pages/Configure2';
 import ConfirmOrder from './pages/ConfirmOrder';
 import AccountCreatedResponse from './pages/AccountCreatedResponse';
+import Logic1 from './pages/Logic1';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path='/configure2' element={<Configure2 />} />
         <Route path='/confirmorder' element={<ConfirmOrder />} />
         <Route path='/accountcreatedresponse' element={<AccountCreatedResponse/>}/>
+        <Route path='/logic1' element={<Logic1/>} />
         
         {/* Add other routes here if needed */}
       </Routes>
@@ -42,7 +44,7 @@ function App() {
 
 function FooterWithConditionalRender() {
   const location = useLocation();
-  const noFooterRoutes = ['/dropdownpage', '/register','/configure1','/configure2','/confirmorder']; // Routes where Footer should not be displayed
+  const noFooterRoutes = ['/dropdownpage', '/register', '/configure1', '/configure2', '/confirmorder']; // Routes where Footer should not be displayed
 
   if (noFooterRoutes.includes(location.pathname.toLowerCase())) {
     return null; // Do not render Footer

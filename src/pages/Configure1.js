@@ -1,18 +1,32 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Button, Card, ListGroup } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 
 const Configure1 = () => {
-  const features = [
-    { name: 'Engine', description: 'V8 engine with turbo' },
-    { name: 'Transmission', description: '8-speed automatic' },
-    { name: 'Brakes', description: 'ABS with EBD' },
-    { name: 'Tires', description: 'All-season tires' },
-    { name: 'Seats', description: 'Leather seats' },
-    { name: 'Sound System', description: 'Premium surround sound' },
-    { name: 'Navigation', description: 'GPS with real-time traffic' },
-    { name: 'Air Conditioning', description: 'Dual-zone automatic climate control' }
-  ];
+  const [carData, setCarData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+  const modelId=
+  useEffect(() => {
+    const fetchCarData = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/cars/{modelId}'); // Adjust endpoint as needed
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setCarData(data);
+      } catch (err) {
+        setError('Error fetching car data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCarData();
+  }, []);
 
   const buttonStyle = {
     margin: '0 10px',
@@ -27,59 +41,49 @@ const Configure1 = () => {
     marginTop: '20px'
   };
 
-  const imageStyle = {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
-  };
-
-  const imageContainerStyle = {
+  const boxStyle = {
+    padding: '20px',
+    border: '1px solid #ddd',
+    borderRadius: '5px',
+    minHeight: '200px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden'
   };
 
-  const cardRef = useRef(null);
-  const [cardHeight, setCardHeight] = useState(0);
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const updateCardHeight = () => {
-      if (cardRef.current) {
-        setCardHeight(cardRef.current.clientHeight);
-      }
-    };
-
-    updateCardHeight();
-
-    window.addEventListener('resize', updateCardHeight);
-    return () => window.removeEventListener('resize', updateCardHeight);
-  }, []);
+  const imageStyle = {
+    width: '100%',
+    height: 'auto',
+    borderRadius: '5px',
+  };
 
   return (
     <Container style={containerStyle}>
       <Row>
         <Col md={6}>
-          <Card ref={cardRef}>
-            <Card.Header>Car Features</Card.Header>
-            <ListGroup variant="flush">
-              {features.map((feature, index) => (
-                <ListGroup.Item key={index}>
-                  <strong>{feature.name}:</strong> {feature.description}
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </Card>
+          <div style={boxStyle}>
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p>{error}</p>
+            ) : carData ? (
+              <p>{carData.description}</p>
+            ) : (
+              <p>No data available</p>
+            )}
+          </div>
         </Col>
         <Col md={6}>
-          <div style={{ ...imageContainerStyle, height: cardHeight }}>
-            <img 
-              src="https://via.placeholder.com/400x300.png?text=Car+Image+Placeholder" 
-              alt="Car Placeholder" 
-              style={imageStyle} 
-            />
+          <div style={boxStyle}>
+            {carData ? (
+              <img 
+                src={`${process.env.PUBLIC_URL}${carData.path}`} // Convert path for correct rendering
+                alt={carData.carName} 
+                style={imageStyle} 
+              />
+            ) : (
+              <p>No image available</p>
+            )}
           </div>
         </Col>
       </Row>

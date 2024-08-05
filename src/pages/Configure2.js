@@ -3,8 +3,8 @@ import { Button, Card } from 'react-bootstrap';
 
 const Configure2 = () => {
   const imageStyle = {
-    width: '100%',
-    height: '100%',
+    width: '791',
+    height: '456',
     objectFit: 'cover',
   };
 
