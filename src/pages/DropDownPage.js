@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Row, Col, Button } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { useNavigate } from 'react-router-dom';
 import '../CSS/DropDownPage.css'; // Import the CSS file if needed
 
 const DropdownPage = () => {
-    const navigate = useNavigate(); // Initialize navigate function
+    const navigate = useNavigate();
     const [selectedSegment, setSelectedSegment] = useState(null);
     const [selectedManufacturer, setSelectedManufacturer] = useState(null);
     const [selectedModel, setSelectedModel] = useState(null);
@@ -14,6 +14,7 @@ const DropdownPage = () => {
     const [manufacturers, setManufacturers] = useState([]);
     const [models, setModels] = useState([]);
     const [formData, setFormData] = useState([]);
+    const [myModelId, setMyModelId] = useState(null); // New state for myModelId
 
     useEffect(() => {
         // Fetch segments from API
@@ -71,6 +72,8 @@ const DropdownPage = () => {
         setSelectedModel(model);
         setMinQty(model.minQty); // Update minQty based on the selected model
         setQuantity(''); // Clear quantity when model is selected
+        setMyModelId(model.id); // Set myModelId based on the selected model
+        console.log('Selected Model ID:', model.id); // Print the model ID to the console
     };
 
     const handleNextButtonClick = () => {
@@ -88,8 +91,8 @@ const DropdownPage = () => {
 
         setFormData(prevData => [...prevData, data]);
 
-        // Navigate to the Configure1 page
-        navigate('/Configure1');
+        // Navigate to the Configure1 page with the selected model ID
+        navigate('/configure1', { state: { modelId: myModelId } });
     };
 
     return (
@@ -223,7 +226,7 @@ const DropdownPage = () => {
                         >
                             <span style={{
                                 marginRight: '8px'
-                            }}>Next</span>
+                            }}>Go</span>
                             <span style={{
                                 marginLeft: '8px',
                                 fontSize: '18px'

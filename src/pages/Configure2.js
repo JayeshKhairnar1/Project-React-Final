@@ -1,173 +1,164 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Button, Card } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Navbar, Nav, Form } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 
 const Configure2 = () => {
-  const imageStyle = {
-    width: '791',
-    height: '456',
-    objectFit: 'cover',
-  };
-
-  const imageContainerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    marginTop: '20px', // Increased top margin
-    marginRight: '30px', // Increased right margin
-  };
-
-  const cardRef = useRef(null);
-  const [cardHeight, setCardHeight] = useState(0);
+  const [vehicleDetails, setVehicleDetails] = useState({});
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedItems, setSelectedItems] = useState({});
+  const [items, setItems] = useState([]);
+  const location = useLocation();
+  const modelId = location.state?.modelId;
 
   useEffect(() => {
-    const updateCardHeight = () => {
-      if (cardRef.current) {
-        setCardHeight(cardRef.current.clientHeight);
-      }
-    };
+    if (modelId) {
+      fetchVehicleDetails();
+    }
+  }, [modelId]);
 
-    updateCardHeight();
+  const fetchVehicleDetails = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/vehicleDetails/${modelId}`);
+      const data = await response.json();
+      setVehicleDetails(data);
+    } catch (error) {
+      console.error('Error fetching vehicle details:', error);
+    }
+  };
 
-    window.addEventListener('resize', updateCardHeight);
-    return () => window.removeEventListener('resize', updateCardHeight);
-  }, []);
+  const fetchItems = async (category) => {
+    let urls = [];
+    if (category === 'S') {
+      urls = [
+        `http://localhost:8080/api/vehicles/S/${modelId}`,
+        `http://localhost:8080/api/vehicles/I/${modelId}`,
+        `http://localhost:8080/api/vehicles/E/${modelId}`
+      ];
+    } else {
+      urls = [`http://localhost:8080/api/vehicles/${category}/${modelId}`];
+    }
+
+    try {
+      const responses = await Promise.all(urls.map(url => fetch(url)));
+      const data = await Promise.all(responses.map(response => response.json()));
+
+      // Flatten the array of arrays into a single array
+      const combinedData = data.flat();
+
+      setItems(combinedData);
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
+  };
 
   const handleButtonClick = (category) => {
     setSelectedCategory(category);
+    fetchItems(category);
   };
 
-  const handleCheckboxChange = (item, price) => {
-    setSelectedItems((prev) => {
-      const updatedItems = { ...prev };
-      if (updatedItems[item]) {
-        delete updatedItems[item];
-      } else {
-        updatedItems[item] = price;
-      }
-      return updatedItems;
-    });
-  };
-
-  const renderCheckboxList = (items) => (
-    <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
-      {items.map(([item, price], index) => (
-        <li key={index} style={{ marginBottom: '10px' }}>
-          <input
-            type="checkbox"
-            id={item}
-            name={item}
-            onChange={() => handleCheckboxChange(item, price)}
-          />
-          <label htmlFor={item} style={{ marginLeft: '5px' }}>
-            {item} - ₹{price}
-          </label>
-        </li>
-      ))}
-    </ul>
+  const renderItemList = () => (
+    <div style={{ width: '100%', display: 'flex' }}>
+      <div style={smallBoxStyle}>
+        {/* Optional content for the smaller box can be added here */}
+      </div>
+      <div style={largeBoxStyle}>
+        {items.map(item => (
+          <div
+            key={item.comp_id}
+            style={{
+              padding: '10px',
+              marginBottom: '10px',
+              backgroundColor: item.is_configurable === 'Y' ? '#e7f0ff' : '#f5c6c6',
+              color: item.is_configurable === 'Y' ? 'black' : 'darkred',
+              borderRadius: '5px',
+            }}
+          >
+            {item.comp_name}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 
-  const calculateTotal = () => {
-    return Object.values(selectedItems).reduce((total, price) => total + price, 0);
-  };
-
-  const interiorItems = [
-    ['Leather Seats', 30000],
-    ['Sunroof', 40000],
-    ['Navigation System', 50000],
-    ['Bluetooth', 20000],
-    ['Premium Audio', 35000],
-  ];
-  const exteriorItems = [
-    ['Alloy Wheels', 25000],
-    ['Fog Lights', 15000],
-    ['Sunroof', 40000],
-    ['Spoiler', 30000],
-    ['Roof Railing', 20000],
-  ];
-  const accessoryItems = [
-    ['Floor Mats', 10000],
-    ['Cargo Organizer', 12000],
-    ['Mud Flaps', 8000],
-    ['Car Cover', 15000],
-    ['Keychain', 3000],
-  ];
-
   return (
-    <div style={containerStyle}>
+    <div style={outerContainerStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <div style={{ flex: 1, paddingRight: '20px' }}>
-          <h3>Honda City -- XX</h3>
+        <div style={{ flex: 1 }}>
+          <h3>{vehicleDetails.name} Select Features you want to add {vehicleDetails.model}</h3>
           <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
-            <li>177-hp, 2.4-liter, 16-Valve, DOHC, i-VTEC®, 4-Cylinder Engine</li>
-            <li>White body colour</li>
-            <li>5-Speed Manual Transmission</li>
-            <li>Double Wishbone Front Suspension</li>
-            <li>Independent Multi-Link Rear Suspension</li>
-            <li>Front and Rear Stabilizer Bars</li>
-            <li>Variable Gear Ratio (VGR) Power-Assisted Rack-and-Pinion Steering</li>
-            <li>Black colour bumper</li>
+            {vehicleDetails.features && vehicleDetails.features.map((feature, index) => (
+              <li key={index}>{feature}</li>
+            ))}
           </ul>
         </div>
-        <div ref={cardRef} style={{ flex: 1 }}>
-          <div style={{ ...imageContainerStyle, height: cardHeight }}>
-            <img
-              src="https://via.placeholder.com/400x300.png?text=Car+Image+Placeholder"
-              alt="Car Placeholder"
-              style={imageStyle}
-            />
-          </div>
+      </div>
+      <div style={contentContainerStyle}>
+        <div style={dropdownContainerStyle}>
+          {selectedCategory && renderItemList()}
         </div>
       </div>
-      <div style={{ marginTop: '20px' }}>
-        <h5>Standard Features</h5>
-        {/* No features list as per previous update */}
-      </div>
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <Button style={footerButtonStyle} onClick={() => handleButtonClick('standard')}>Std. Features</Button>
-        <Button style={footerButtonStyle} onClick={() => handleButtonClick('interior')}>Interior</Button>
-        <Button style={footerButtonStyle} onClick={() => handleButtonClick('exterior')}>Exterior</Button>
-        <Button style={footerButtonStyle} onClick={() => handleButtonClick('accessories')}>Accessories</Button>
-        <Button style={footerButtonStyle}>Cancel</Button>
-        <Button style={footerButtonStyle}>Confirm Order</Button>
-      </div>
-      {selectedCategory && (
-        <div style={{ marginTop: '20px' }}>
-          <Card style={{ padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-            <Card.Body>
-              <h5>{selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</h5>
-              {selectedCategory === 'interior' && renderCheckboxList(interiorItems)}
-              {selectedCategory === 'exterior' && renderCheckboxList(exteriorItems)}
-              {selectedCategory === 'accessories' && renderCheckboxList(accessoryItems)}
-              <div style={{ marginTop: '20px', fontWeight: 'bold' }}>
-                Total: ₹{calculateTotal()}
-              </div>
-            </Card.Body>
-          </Card>
-        </div>
-      )}
+      <Navbar bg="light" variant="light" style={navbarStyle}>
+        <Nav className="justify-content-center" style={{ width: '100%' }}>
+          <Nav.Link onClick={() => handleButtonClick('S')} style={footerButtonStyle}>Std. Features</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('I')} style={footerButtonStyle}>Interior</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('E')} style={footerButtonStyle}>Exterior</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('A')} style={footerButtonStyle}>Accessories</Nav.Link>
+          <Nav.Link style={footerButtonStyle}>Cancel</Nav.Link>
+          <Nav.Link style={footerButtonStyle}>Confirm Order</Nav.Link>
+        </Nav>
+      </Navbar>
     </div>
   );
 };
 
-const containerStyle = {
-  margin: '20px', // Margin around the entire container
-  padding: '20px', // Padding inside the container
-  backgroundColor: '#f9f9f9', // Light background color to distinguish from other sections
-  borderRadius: '8px', // Rounded corners
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' // Shadow effect for better separation
+const outerContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '20px',
+  fontFamily: 'Arial, sans-serif',
+};
+
+const contentContainerStyle = {
+  display: 'flex',
+  justifyContent: 'flex-start', // Align dropdown container to the left
+  width: '100%',
+};
+
+const dropdownContainerStyle = {
+  flex: 1,
+  padding: '10px',
+  backgroundColor: '#f5f5f5',
+  borderRadius: '5px',
+};
+
+const smallBoxStyle = {
+  flex: 1,
+  minWidth: '33.33%', // 1/3 width of the container
+  padding: '10px',
+  backgroundColor: '#e0e0e0',
+  borderRadius: '5px',
+  marginRight: '10px',
+};
+
+const largeBoxStyle = {
+  flex: 3,
+  padding: '10px',
+  backgroundColor: '#f5f5f5',
+  borderRadius: '5px',
+};
+
+const navbarStyle = {
+  marginTop: '20px',
+  width: '100%',
 };
 
 const footerButtonStyle = {
-  margin: '0 2px', // Reduced margin between buttons
+  margin: '0 10px',
   padding: '10px 20px',
   backgroundColor: 'yellow',
   border: 'none',
   color: 'black',
   fontWeight: 'bold',
-  borderRadius: '4px', // Rounded edges
 };
 
 export default Configure2;

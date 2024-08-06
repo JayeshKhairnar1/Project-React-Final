@@ -1,42 +1,45 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-
-// Pages
-import Home from './pages/Home';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import LoginPage from './pages/Login';
-import UserForm from './pages/UserForm';
-import DropdownPage from './pages/DropDownPage';
 
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer/Footer';
-import Configure1 from './pages/Configure1';
-import Configure2 from './pages/Configure2';
-import ConfirmOrder from './pages/ConfirmOrder';
-import AccountCreatedResponse from './pages/AccountCreatedResponse';
-import Logic1 from './pages/Logic1';
+
+// Lazy-loaded pages
+const Home = React.lazy(() => import('./pages/Home'));
+const About = React.lazy(() => import('./pages/About'));
+const Contact = React.lazy(() => import('./pages/Contact'));
+const LoginPage = React.lazy(() => import('./pages/Login'));
+const UserForm = React.lazy(() => import('./pages/UserForm'));
+const DropdownPage = React.lazy(() => import('./pages/DropDownPage'));
+const Configure1 = React.lazy(() => import('./pages/Configure1'));
+const Configure2 = React.lazy(() => import('./pages/Configure2'));
+const ConfirmOrder = React.lazy(() => import('./pages/ConfirmOrder'));
+const AccountCreatedResponse = React.lazy(() => import('./pages/AccountCreatedResponse'));
+const Logic1 = React.lazy(() => import('./pages/Logic1'));
+const Invoice = React.lazy(() => import('./pages/Invoice'));
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/contact' element={<Contact />} />
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/register' element={<UserForm />} />
-        <Route path='/dropdownpage' element={<DropdownPage />} />
-        <Route path='/configure1' element={<Configure1 />} />
-        <Route path='/configure2' element={<Configure2 />} />
-        <Route path='/confirmorder' element={<ConfirmOrder />} />
-        <Route path='/accountcreatedresponse' element={<AccountCreatedResponse/>}/>
-        <Route path='/logic1' element={<Logic1/>} />
-        
-        {/* Add other routes here if needed */}
-      </Routes>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/about' element={<About />} />
+          <Route path='/contact' element={<Contact />} />
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/register' element={<UserForm />} />
+          <Route path='/dropdownpage' element={<DropdownPage />} />
+          <Route path='/configure1' element={<Configure1 />} />
+          <Route path='/configure2' element={<Configure2 />} />
+          <Route path='/confirmorder' element={<ConfirmOrder />} />
+          <Route path='/accountcreatedresponse' element={<AccountCreatedResponse />} />
+          <Route path='/logic1' element={<Logic1 />} />
+          <Route path='/invoice' element={<Invoice />} />
+          {/* Add other routes here if needed */}
+        </Routes>
+      </Suspense>
       <FooterWithConditionalRender />
     </BrowserRouter>
   );

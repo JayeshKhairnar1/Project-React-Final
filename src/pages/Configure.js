@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 
-const Configure1 = () => {
+const Configure = () => {
   const [carData, setCarData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -184,4 +184,4 @@ const Configure1 = () => {
   );
 };
 
-export default Configure1;
+export default Configure;

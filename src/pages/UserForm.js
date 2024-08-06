@@ -309,23 +309,13 @@ const UserForm = () => {
                                 </Form.Group>
                             </Col>
                         </Row>
-                        <Row className="text-center">
-                            <Col>
-                                <Button type="submit" variant="primary" className="form-button-custom">
-                                    Register
-                                </Button>
-                                <Button type="reset" variant="secondary" className="form-button-custom" onClick={handleReset}>
-                                    Reset
-                                </Button>
-                            </Col>
-                        </Row>
+                        <div className="d-flex justify-content-center">
+                            <Button type="submit" variant="primary" className="me-2">Register</Button>
+                            <Button type="reset" variant="secondary" className="ms-2" onClick={handleReset}>Reset</Button>
+                        </div>
                     </Form>
-                    <Alert 
-                        show={showAlert} 
-                        variant="success" 
-                        className="form-alert-custom"
-                    >
-                        Registration successful!
+                    <Alert show={showAlert} variant="success" className="mt-3" style={{ position: 'fixed', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: '300px' }}>
+                        Registration Successful!
                     </Alert>
                 </Col>
             </Row>
