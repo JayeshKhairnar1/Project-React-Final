@@ -1,39 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Navbar, Nav, Form } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 
-const Configure = () => {
-  const [carData, setCarData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [components, setComponents] = useState([]);
-  const [componentsLoading, setComponentsLoading] = useState(true);
-  const [componentsError, setComponentsError] = useState(null);
-
-  const navigate = useNavigate();
+const Configure2 = () => {
+  const [vehicleDetails, setVehicleDetails] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [items, setItems] = useState([]);
   const location = useLocation();
   const modelId = location.state?.modelId;
 
   useEffect(() => {
-    const fetchCarData = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/api/cars/${modelId}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setCarData(data);
-      } catch (err) {
-        setError('Error fetching car data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (modelId) {
-      fetchCarData();
+      fetchVehicleDetails();
     }
   }, [modelId]);
+
+  const fetchVehicleDetails = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/vehicleDetails/${modelId}`);
+      const data = await response.json();
+      setVehicleDetails(data);
+    } catch (error) {
+      console.error('Error fetching vehicle details:', error);
+    }
+  };
 
   const fetchItems = async (category) => {
     let urls = [];
@@ -49,139 +39,126 @@ const Configure = () => {
 
     try {
       const responses = await Promise.all(urls.map(url => fetch(url)));
-      const data = await Promise.all(responses.map(res => res.json()));
-      const combinedData = data.flat(); // Combine all fetched data into one array
-      setComponents(combinedData);
-    } catch (err) {
-      setComponentsError('Error fetching components');
-    } finally {
-      setComponentsLoading(false);
+      const data = await Promise.all(responses.map(response => response.json()));
+
+      // Flatten the array of arrays into a single array
+      const combinedData = data.flat();
+
+      setItems(combinedData);
+    } catch (error) {
+      console.error('Error fetching items:', error);
     }
   };
 
-  useEffect(() => {
-    fetchItems('S'); // Replace 'S' with the category you need to fetch
-  }, [modelId]);
-
-  const buttonStyle = {
-    margin: '0 5px',
-    padding: '5px 10px',
-    backgroundColor: 'yellow',
-    border: 'none',
-    color: 'black',
-    fontWeight: 'bold'
+  const handleButtonClick = (category) => {
+    setSelectedCategory(category);
+    fetchItems(category);
   };
 
-  const containerStyle = {
-    marginTop: '10px'
-  };
-
-  const boxStyle = {
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    minHeight: '100px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#e7f0ff', // Light blue color for all boxes
-    marginBottom: '10px' // Ensure spacing between boxes
-  };
-
-  const imageStyle = {
-    width: '100%',
-    height: 'auto',
-    borderRadius: '5px',
-  };
-
-  const cardStyle = (isConfigurable) => ({
-    margin: '5px',
-    padding: '5px',
-    textAlign: 'center',
-    backgroundColor: isConfigurable ? '#d4edda' : '#f8f9fa', // Light green for configurable, light gray for non-configurable
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    minWidth: '100px'
-  });
-
-  const componentListStyle = {
-    ...boxStyle,
-    minHeight: '200px',
-    backgroundColor: '#f8f9fa',
-    padding: '10px',
-    overflowY: 'auto',
-  };
-
-  const listStyle = {
-    listStyleType: 'disc',
-    paddingLeft: '20px'
-  };
-
-  const titleStyle = {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    marginBottom: '10px',
-    color: '#333'
-  };
+  const renderItemList = () => (
+    <div style={{ width: '100%', display: 'flex' }}>
+      <div style={smallBoxStyle}>
+        {/* Optional content for the smaller box can be added here */}
+      </div>
+      <div style={largeBoxStyle}>
+        {items.map(item => (
+          <div
+            key={item.comp_id}
+            style={{
+              padding: '10px',
+              marginBottom: '10px',
+              backgroundColor: item.is_configurable === 'Y' ? '#e7f0ff' : '#f5c6c6',
+              color: item.is_configurable === 'Y' ? 'black' : 'darkred',
+              borderRadius: '5px',
+            }}
+          >
+            {item.comp_name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <Container style={containerStyle}>
-      <Row>
-        <Col md={3}>
-          <div>
-            <h5 style={titleStyle}>Description</h5>
-            <div style={boxStyle}>
-              {loading ? (
-                <p>Loading...</p>
-              ) : error ? (
-                <p>{error}</p>
-              ) : carData ? (
-                <p>{carData.description}</p>
-              ) : (
-                <p>No data available</p>
-              )}
-            </div>
-          </div>
-          <div>
-            <h5 style={titleStyle}>Standard Components</h5>
-            <div style={boxStyle}>
-              {componentsLoading ? (
-                <p>Loading components...</p>
-              ) : componentsError ? (
-                <p>{componentsError}</p>
-              ) : components.length > 0 ? (
-                <ul style={listStyle}>
-                  {components.map(component => (
-                    <li key={component.comp_id}>{component.comp_name}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No components available</p>
-              )}
-            </div>
-          </div>
-        </Col>
-        <Col md={9}>
-          {carData ? (
-            <img 
-              src={`${process.env.PUBLIC_URL}${carData.path}`} // Convert path for correct rendering
-              alt={carData.carName} 
-              style={imageStyle} 
-            />
-          ) : (
-            <p>No image available</p>
-          )}
-        </Col>
-      </Row>
-      <Row className="mt-2">
-        <Col className="d-flex justify-content-center">
-          <Button style={buttonStyle} onClick={() => navigate('/confirmorder', { state: { modelId } })}>Confirm Order</Button>
-          <Button style={buttonStyle} onClick={() => navigate('/configure2', { state: { modelId } })}>Configure</Button>
-          <Button style={buttonStyle} onClick={() => navigate('/dropdownPage', { state: { modelId } })}>Modify</Button>
-        </Col>
-      </Row>
-    </Container>
+    <div style={outerContainerStyle}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div style={{ flex: 1 }}>
+          <h3>{vehicleDetails.name} Select Features you want to add {vehicleDetails.model}</h3>
+          <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
+            {vehicleDetails.features && vehicleDetails.features.map((feature, index) => (
+              <li key={index}>{feature}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div style={contentContainerStyle}>
+        <div style={dropdownContainerStyle}>
+          {selectedCategory && renderItemList()}
+        </div>
+      </div>
+      <Navbar bg="light" variant="light" style={navbarStyle}>
+        <Nav className="justify-content-center" style={{ width: '100%' }}>
+          <Nav.Link onClick={() => handleButtonClick('S')} style={footerButtonStyle}>Std. Features</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('I')} style={footerButtonStyle}>Interior</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('E')} style={footerButtonStyle}>Exterior</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('A')} style={footerButtonStyle}>Accessories</Nav.Link>
+          <Nav.Link style={footerButtonStyle}>Cancel</Nav.Link>
+          <Nav.Link style={footerButtonStyle}>Confirm Order</Nav.Link>
+        </Nav>
+      </Navbar>
+    </div>
   );
 };
 
-export default Configure;
+const outerContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '20px',
+  fontFamily: 'Arial, sans-serif',
+};
+
+const contentContainerStyle = {
+  display: 'flex',
+  justifyContent: 'flex-start', // Align dropdown container to the left
+  width: '100%',
+};
+
+const dropdownContainerStyle = {
+  flex: 1,
+  padding: '10px',
+  backgroundColor: '#f5f5f5',
+  borderRadius: '5px',
+};
+
+const smallBoxStyle = {
+  flex: 1,
+  minWidth: '33.33%', // 1/3 width of the container
+  padding: '10px',
+  backgroundColor: '#e0e0e0',
+  borderRadius: '5px',
+  marginRight: '10px',
+};
+
+const largeBoxStyle = {
+  flex: 3,
+  padding: '10px',
+  backgroundColor: '#f5f5f5',
+  borderRadius: '5px',
+};
+
+const navbarStyle = {
+  marginTop: '20px',
+  width: '100%',
+};
+
+const footerButtonStyle = {
+  margin: '0 10px',
+  padding: '10px 20px',
+  backgroundColor: 'yellow',
+  border: 'none',
+  color: 'black',
+  fontWeight: 'bold',
+};
+
+export default Configure2;

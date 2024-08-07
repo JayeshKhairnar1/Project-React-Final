@@ -91,8 +91,8 @@ const DropdownPage = () => {
 
         setFormData(prevData => [...prevData, data]);
 
-        // Navigate to the Configure1 page with the selected model ID
-        navigate('/configure1', { state: { modelId: myModelId } });
+        // Navigate to the Configure1 page with the selected model ID and quantity
+        navigate('/configure1', { state: { modelId: myModelId, quantity: quantity } });
     };
 
     return (

@@ -4,9 +4,9 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer/Footer';
-
+import Home from './pages/Home';
 // Lazy-loaded pages
-const Home = React.lazy(() => import('./pages/Home'));
+
 const About = React.lazy(() => import('./pages/About'));
 const Contact = React.lazy(() => import('./pages/Contact'));
 const LoginPage = React.lazy(() => import('./pages/Login'));
@@ -19,6 +19,7 @@ const AccountCreatedResponse = React.lazy(() => import('./pages/AccountCreatedRe
 const Logic1 = React.lazy(() => import('./pages/Logic1'));
 const Invoice = React.lazy(() => import('./pages/Invoice'));
 
+const ConfirmOrder1 =React.lazy(()=>import ('./pages/ConfirmOrder1')) ;
 function App() {
   return (
     <BrowserRouter>
@@ -37,6 +38,7 @@ function App() {
           <Route path='/accountcreatedresponse' element={<AccountCreatedResponse />} />
           <Route path='/logic1' element={<Logic1 />} />
           <Route path='/invoice' element={<Invoice />} />
+          <Route path="/confirmorder1" element={<ConfirmOrder1 />} />
           {/* Add other routes here if needed */}
         </Routes>
       </Suspense>
@@ -44,7 +46,7 @@ function App() {
     </BrowserRouter>
   );
 }
-
+//Ignoring footer for this pages
 function FooterWithConditionalRender() {
   const location = useLocation();
   const noFooterRoutes = ['/dropdownpage', '/register', '/configure1', '/configure2', '/confirmorder']; // Routes where Footer should not be displayed

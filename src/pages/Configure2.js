@@ -12,6 +12,7 @@ const Configure2 = () => {
   useEffect(() => {
     if (modelId) {
       fetchVehicleDetails();
+      handleButtonClick('S'); // Automatically press "Std. Features" on page load
     }
   }, [modelId]);
 

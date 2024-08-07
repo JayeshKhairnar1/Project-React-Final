@@ -9,10 +9,12 @@ const Configure1 = () => {
   const [components, setComponents] = useState([]);
   const [componentsLoading, setComponentsLoading] = useState(true);
   const [componentsError, setComponentsError] = useState(null);
+  const [priceData, setPriceData] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
   const modelId = location.state?.modelId;
+  const quantity = location.state?.quantity;
 
   useEffect(() => {
     const fetchCarData = async () => {
@@ -35,6 +37,25 @@ const Configure1 = () => {
     }
   }, [modelId]);
 
+  useEffect(() => {
+    const fetchPriceData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/models/details/${modelId}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setPriceData(data.price);
+      } catch (err) {
+        setError('Error fetching price data');
+      }
+    };
+
+    if (modelId) {
+      fetchPriceData();
+    }
+  }, [modelId]);
+
   const fetchItems = async (category) => {
     let urls = [];
     if (category === 'S') {
@@ -49,7 +70,7 @@ const Configure1 = () => {
 
     try {
       const responses = await Promise.all(urls.map(url => fetch(url)));
-      const data = await Promise.all(responses.map(res => res.json()));
+      const data = await Promise.all(responses.map(res => res.json())); // Fixed the typo here
       const combinedData = data.flat(); // Combine all fetched data into one array
       setComponents(combinedData);
     } catch (err) {
@@ -73,7 +94,8 @@ const Configure1 = () => {
   };
 
   const containerStyle = {
-    marginTop: '10px'
+    marginTop: '10px',
+    position: 'relative'
   };
 
   const boxStyle = {
@@ -86,6 +108,16 @@ const Configure1 = () => {
     justifyContent: 'center',
     backgroundColor: '#e7f0ff', // Light blue color for all boxes
     marginBottom: '10px' // Ensure spacing between boxes
+  };
+
+  const priceBoxStyle = {
+    marginTop: '10px',
+    padding: '20px',
+    border: '1px solid #ddd',
+    borderRadius: '5px',
+    backgroundColor: '#e7f0ff', // Light blue color for the price box
+    color: '#333',
+    fontWeight: 'bold',
   };
 
   const imageStyle = {
@@ -171,11 +203,16 @@ const Configure1 = () => {
           ) : (
             <p>No image available</p>
           )}
+          {priceData && quantity && (
+            <div style={priceBoxStyle}>
+              Base Price: ₹{priceData} x {quantity} = ₹{priceData * quantity}
+            </div>
+          )}
         </Col>
       </Row>
       <Row className="mt-2">
         <Col className="d-flex justify-content-center">
-          <Button style={buttonStyle} onClick={() => navigate('/confirmorder', { state: { modelId } })}>Confirm Order</Button>
+          <Button style={buttonStyle} onClick={() => navigate('/confirmorder1', { state: { modelId, quantity, price: priceData } })}>Confirm Order</Button>
           <Button style={buttonStyle} onClick={() => navigate('/configure2', { state: { modelId } })}>Configure</Button>
           <Button style={buttonStyle} onClick={() => navigate('/dropdownPage', { state: { modelId } })}>Modify</Button>
         </Col>
