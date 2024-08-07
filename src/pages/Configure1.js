@@ -17,6 +17,13 @@ const Configure1 = () => {
   const quantity = location.state?.quantity;
 
   useEffect(() => {
+    if (modelId && quantity) {
+      console.log('Model ID from DropdownPage:', modelId);
+      console.log('Quantity from DropdownPage:', quantity);
+    }
+  }, [modelId, quantity]);
+
+  useEffect(() => {
     const fetchCarData = async () => {
       try {
         const response = await fetch(`http://localhost:8080/api/cars/${modelId}`);
@@ -70,8 +77,8 @@ const Configure1 = () => {
 
     try {
       const responses = await Promise.all(urls.map(url => fetch(url)));
-      const data = await Promise.all(responses.map(res => res.json())); // Fixed the typo here
-      const combinedData = data.flat(); // Combine all fetched data into one array
+      const data = await Promise.all(responses.map(res => res.json()));
+      const combinedData = data.flat();
       setComponents(combinedData);
     } catch (err) {
       setComponentsError('Error fetching components');
@@ -81,7 +88,7 @@ const Configure1 = () => {
   };
 
   useEffect(() => {
-    fetchItems('S'); // Replace 'S' with the category you need to fetch
+    fetchItems('S');
   }, [modelId]);
 
   const buttonStyle = {
@@ -106,8 +113,8 @@ const Configure1 = () => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e7f0ff', // Light blue color for all boxes
-    marginBottom: '10px' // Ensure spacing between boxes
+    backgroundColor: '#e7f0ff',
+    marginBottom: '10px'
   };
 
   const priceBoxStyle = {
@@ -115,7 +122,7 @@ const Configure1 = () => {
     padding: '20px',
     border: '1px solid #ddd',
     borderRadius: '5px',
-    backgroundColor: '#e7f0ff', // Light blue color for the price box
+    backgroundColor: '#e7f0f0',
     color: '#333',
     fontWeight: 'bold',
   };
@@ -130,7 +137,7 @@ const Configure1 = () => {
     margin: '5px',
     padding: '5px',
     textAlign: 'center',
-    backgroundColor: isConfigurable ? '#d4edda' : '#f8f9fa', // Light green for configurable, light gray for non-configurable
+    backgroundColor: isConfigurable ? '#d4edda' : '#f8f9fa',
     border: '1px solid #ddd',
     borderRadius: '5px',
     minWidth: '100px'
@@ -139,7 +146,7 @@ const Configure1 = () => {
   const componentListStyle = {
     ...boxStyle,
     minHeight: '200px',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8f9f9',
     padding: '10px',
     overflowY: 'auto',
   };
@@ -196,7 +203,7 @@ const Configure1 = () => {
         <Col md={9}>
           {carData ? (
             <img 
-              src={`${process.env.PUBLIC_URL}${carData.path}`} // Convert path for correct rendering
+              src={`${process.env.PUBLIC_URL}${carData.path}`} 
               alt={carData.carName} 
               style={imageStyle} 
             />
@@ -212,9 +219,24 @@ const Configure1 = () => {
       </Row>
       <Row className="mt-2">
         <Col className="d-flex justify-content-center">
-          <Button style={buttonStyle} onClick={() => navigate('/confirmorder1', { state: { modelId, quantity, price: priceData } })}>Confirm Order</Button>
-          <Button style={buttonStyle} onClick={() => navigate('/configure2', { state: { modelId } })}>Configure</Button>
-          <Button style={buttonStyle} onClick={() => navigate('/dropdownPage', { state: { modelId } })}>Modify</Button>
+          <Button 
+            style={buttonStyle} 
+            onClick={() => navigate('/confirmorder1', { state: { modelId, quantity, price: priceData } })}
+          >
+            Confirm Order
+          </Button>
+          <Button 
+            style={buttonStyle} 
+            onClick={() => navigate('/configure2', { state: { modelId, quantity, price: priceData } })}
+          >
+            Configure
+          </Button>
+          <Button 
+            style={buttonStyle} 
+            onClick={() => navigate('/dropdownPage', { state: { modelId } })}
+          >
+            Modify
+          </Button>
         </Col>
       </Row>
     </Container>

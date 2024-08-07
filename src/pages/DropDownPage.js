@@ -15,7 +15,7 @@ const DropdownPage = () => {
     const [models, setModels] = useState([]);
     const [formData, setFormData] = useState([]);
     const [myModelId, setMyModelId] = useState(null); // New state for myModelId
-
+ 
     useEffect(() => {
         // Fetch segments from API
         fetch('http://localhost:8080/api/segments/')
@@ -50,6 +50,11 @@ const DropdownPage = () => {
         }
     }, [selectedManufacturer]);
 
+    // UseEffect to log formData when it changes
+  useEffect(() => {
+    console.log('Form Data:', formData);
+  }, [formData]);
+
     const handleSegmentSelect = (segment) => {
         setSelectedSegment(segment);
         setSelectedManufacturer(null);
@@ -58,6 +63,7 @@ const DropdownPage = () => {
         setQuantity('');
         setManufacturers([]);
         setModels([]);
+        console.log('Selected Segment:', segment); // Print selected segment
     };
 
     const handleManufacturerSelect = (manufacturer) => {
@@ -66,6 +72,7 @@ const DropdownPage = () => {
         setMinQty(null);
         setQuantity('');
         setModels([]);
+        console.log('Selected Manufacturer:', manufacturer); // Print selected manufacturer
     };
 
     const handleModelSelect = (model) => {
@@ -87,9 +94,13 @@ const DropdownPage = () => {
             manufacturer: selectedManufacturer,
             model: selectedModel,
             quantity: quantity
-        };
-
-        setFormData(prevData => [...prevData, data]);
+          };
+      
+          // Update formData state
+          setFormData(prevData => [...prevData, data]);
+      
+          // Log data before navigation
+          console.log('Data:', data);
 
         // Navigate to the Configure1 page with the selected model ID and quantity
         navigate('/configure1', { state: { modelId: myModelId, quantity: quantity } });
