@@ -10,11 +10,12 @@ const Configure2 = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const location = useLocation();
   const { modelId, quantity, price } = location.state || {};
+  console.log(modelId);
 
   useEffect(() => {
     if (modelId) {
       fetchVehicleDetails();
-      fetchItems('S'); // Automatically fetch "Std. Features" on page load
+      fetchItems('S');
     }
   }, [modelId]);
 
@@ -35,10 +36,24 @@ const Configure2 = () => {
   };
 
   const fetchItems = async (category) => {
+    let urls = [];
+  
+    if (category === 'S') {
+      urls = [
+        `http://localhost:8080/api/vehicles/S/${modelId}`,
+        `http://localhost:8080/api/vehicles/I/${modelId}`,
+        `http://localhost:8080/api/vehicles/E/${modelId}`
+      ];
+    } else {
+      urls = [`http://localhost:8080/api/vehicles/${category}/${modelId}`];
+    }
+  
     try {
-      const response = await fetch(`http://localhost:8080/api/vehicles/${category}/${modelId}`);
-      const data = await response.json();
-      const itemsWithDropdowns = await Promise.all(data.map(async item => {
+      const responses = await Promise.all(urls.map(url => fetch(url)));
+      const data = await Promise.all(responses.map(res => res.json()));
+      const combinedData = data.flat();
+      
+      const itemsWithDropdowns = await Promise.all(combinedData.map(async item => {
         if (item.is_configurable === 'Y') {
           const dropdownOptions = await fetchDropdownOptions(modelId, item.comp_id);
           return {
@@ -48,11 +63,13 @@ const Configure2 = () => {
         }
         return item;
       }));
+  
       setItems(itemsWithDropdowns);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
   };
+  
 
   const fetchDropdownOptions = async (modelId, compId) => {
     try {
@@ -176,7 +193,7 @@ const Configure2 = () => {
     const basePriceEntry = {
       id: 'base-price',
       name: 'Base Price',
-      price: price || 0, // Use the base price from location.state
+      price: price || 0,
     };
 
     const basePriceTotal = basePriceEntry.price * quantity;
@@ -188,16 +205,7 @@ const Configure2 = () => {
         <h4>Selected Items</h4>
         <div style={selectionBoxStyle}>
           <div style={leftSideStyle}>
-            <div style={itemStyle}>
-              <label>
-                <input 
-                  type="checkbox" 
-                  checked 
-                  readOnly
-                />
-                {basePriceEntry.name} - ₹{basePriceEntry.price}
-              </label>
-            </div>
+            
             {selectedItems.map(item => (
               <div key={item.id} style={itemStyle}>
                 <label>
@@ -245,33 +253,32 @@ const Configure2 = () => {
     <div style={outerContainerStyle}>
       <Navbar bg="light" variant="light" style={navbarStyle}>
         <Nav className="justify-content-center" style={{ width: '100%' }}>
-          <Nav.Link onClick={() => handleButtonClick('S')} style={footerButtonStyle}>Std. Features</Nav.Link>
-          <Nav.Link onClick={() => handleButtonClick('I')} style={footerButtonStyle}>Interior</Nav.Link>
-          <Nav.Link onClick={() => handleButtonClick('E')} style={footerButtonStyle}>Exterior</Nav.Link>
-          <Nav.Link onClick={() => handleButtonClick('A')} style={footerButtonStyle}>Accessories</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('S')} style={selectedCategory === 'S' ? { ...footerButtonStyle, ...activeButtonStyle } : footerButtonStyle}>Std. Features</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('I')} style={selectedCategory === 'I' ? { ...footerButtonStyle, ...activeButtonStyle } : footerButtonStyle}>Interior</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('E')} style={selectedCategory === 'E' ? { ...footerButtonStyle, ...activeButtonStyle } : footerButtonStyle}>Exterior</Nav.Link>
+          <Nav.Link onClick={() => handleButtonClick('A')} style={selectedCategory === 'A' ? { ...footerButtonStyle, ...activeButtonStyle } : footerButtonStyle}>Accessories</Nav.Link>
           <Nav.Link onClick={() => setSelectedItems([])} style={footerButtonStyle}>Cancel</Nav.Link>
           <Nav.Link style={footerButtonStyle}>Confirm Order</Nav.Link>
         </Nav>
       </Navbar>
       <div style={containerStyle}>
-        <div style={boxStyle}>
-          <h4>Standard Features</h4>
-          {selectedCategory === 'S' && renderBoxContent()}
+        <div style={carImageStyle}>
+          {/* Display car image here */}
+          {vehicleDetails ? (
+            <img 
+              src={`${process.env.PUBLIC_URL}${vehicleDetails.path}`} // Ensure this path is correct
+              alt={vehicleDetails.carName} 
+              style={imageStyle} 
+            />
+          ) : (
+            <p>No image available</p>
+          )}
         </div>
-        <div style={boxStyle}>
-          <h4>Interior</h4>
-          {selectedCategory === 'I' && renderBoxContent()}
+        <div style={optionsBoxStyle}>
+          {renderBoxContent()}
         </div>
-        <div style={boxStyle}>
-          <h4>Exterior</h4>
-          {selectedCategory === 'E' && renderBoxContent()}
-        </div>
-        <div style={boxStyle}>
-          <h4>Accessories</h4>
-          {selectedCategory === 'A' && renderBoxContent()}
-        </div>
+        {renderSelectedItems()}
       </div>
-      {renderSelectedItems()}
     </div>
   );
 };
@@ -291,6 +298,15 @@ const navbarStyle = {
 const footerButtonStyle = {
   margin: '0 10px',
   fontWeight: 'bold',
+  padding: '10px 20px',
+  borderRadius: '5px',
+  transition: 'background-color 0.3s, color 0.3s',
+  cursor: 'pointer',
+};
+
+const activeButtonStyle = {
+  backgroundColor: '#007bff',
+  color: '#fff',
 };
 
 const containerStyle = {
@@ -300,8 +316,23 @@ const containerStyle = {
   marginTop: '20px',
 };
 
-const boxStyle = {
-  width: '23%',
+const carImageStyle = {
+  width: '30%',
+  padding: '10px',
+  border: '1px solid #ddd',
+  borderRadius: '5px',
+  height: '400px',
+  backgroundColor: '#f0f0f0',
+};
+
+const imageStyle = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'contain',
+};
+
+const optionsBoxStyle = {
+  width: '30%',
   padding: '10px',
   border: '1px solid #ddd',
   borderRadius: '5px',
@@ -311,27 +342,26 @@ const boxStyle = {
 };
 
 const selectedItemsContainerStyle = {
-  marginTop: '20px',
+  width: '30%',
   padding: '10px',
   border: '1px solid #ddd',
   borderRadius: '5px',
-  width: '100%',
-  maxWidth: '1200px',
+  backgroundColor: '#e7f0ff',
+  height: '400px',
+  overflowY: 'auto',
 };
 
 const selectionBoxStyle = {
   display: 'flex',
   justifyContent: 'space-between',
+  flexDirection: 'column',
 };
 
 const leftSideStyle = {
-  width: '50%',
   paddingRight: '10px',
-  borderRight: '1px solid #ddd',
 };
 
 const rightSideStyle = {
-  width: '50%',
   paddingLeft: '10px',
 };
 

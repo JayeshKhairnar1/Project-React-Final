@@ -1,25 +1,54 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import { useLocation } from 'react-router-dom'; // Import useLocation for accessing passed state
-import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is imported
-import logo from '../assets/Extra Images/VitaLogo.png'; // Adjust the path if necessary
+import { useLocation } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import logo from '../assets/Extra Images/VitaLogo.png';
 
 const InvoicePage = () => {
   const invoiceRef = useRef();
   const location = useLocation();
-  const { invoiceData } = location.state || {}; // Retrieve invoice data from location state
+  const { invoiceData } = location.state || {};
+
+  // State to store user data
+  const [userData, setUserData] = useState(null);
 
   // Retrieve userId from session storage
   const userId = sessionStorage.getItem('userid') || 'N/A';
+
+  // Fetch user data from API on page load
+  useEffect(() => {
+    fetch(`http://localhost:8080/api/user/userForInvoice/${userId}`)
+      .then(response => response.json())
+      .then(data => setUserData(data))
+      .catch(error => console.error('Error fetching user data:', error));
+  }, [userId]);
 
   const handlePrint = () => {
     html2canvas(invoiceRef.current).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF();
       pdf.addImage(imgData, 'PNG', 15, 10, 180, 160);
-      pdf.save('invoice.pdf');
+      //const date = new Date().toLocaleDateString();
+      const time = new Date().getHours() + '' + new Date().getMinutes() + new Date().getSeconds();
+      const pdfName = 'invoice' + userId + time;
+      pdf.save(pdfName);
+
+      // API call to send the email with the invoice
+      fetch('http://localhost:8080/api/email/mailInvoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sendTo: userData?.email,
+          invoiceName: pdfName,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => console.log('Email sent:', data))
+      .catch(error => console.error('Error sending email:', error));
     });
   };
 
@@ -46,22 +75,21 @@ const InvoicePage = () => {
     marginBottom: '20px',
   };
 
-  const tableStyle = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    marginBottom: '20px',
+  const listStyle = {
+    listStyleType: 'none',
+    padding: '0',
   };
 
-  const thStyle = {
+  const listItemStyle = {
     border: '1px solid black',
-    padding: '8px',
-    textAlign: 'left',
-    backgroundColor: '#f0f0f0', // Optional: Add background color to headers
+    padding: '10px',
+    marginBottom: '5px',
+    backgroundColor: '#f9f9f9',
   };
 
-  const tdStyle = {
-    border: '1px solid black',
-    padding: '8px',
+  const buttonContainerStyle = {
+    textAlign: 'center',
+    marginTop: '20px',
   };
 
   return (
@@ -79,53 +107,48 @@ const InvoicePage = () => {
         </Row>
         <Row className="mb-4">
           <Col>
-            <p><strong>User ID:</strong> {userId}</p> {/* Display userId */}
-            <p><strong>Customer Name:</strong> {invoiceData?.customerName || 'N/A'}</p>
-            <p><strong>Address:</strong> {invoiceData?.address || 'N/A'}</p>
+            <p><strong>User ID:</strong> {userId}</p>
             <p><strong>Invoice Date:</strong> {invoiceData?.invoiceDate || new Date().toLocaleDateString()}</p>
-            <p><strong>Invoice Number:</strong> {invoiceData?.invoiceNumber || 'INV-000000'}</p>
+            <p><strong>Invoice Number:</strong> {invoiceData?.invoiceNumber || 'SWFT-240'+invoiceData?.orderedQty || 'N/A'}</p>
+            <p><strong>Quantity:</strong> {invoiceData?.orderedQty || 'N/A'}</p>
+            {/* Display additional user info */}
+            {userData && (
+              <>
+                <p><strong>Username:</strong> {userData.username}</p>
+                <p><strong>Company Name:</strong> {userData.company_name}</p>
+                <p><strong>GST Number:</strong> {userData.gst_number}</p>
+                <p><strong>Address: </strong> {userData.address_line1} ,{userData.address_line2} ,{userData.city}</p>
+              </>
+            )}
           </Col>
+          <hr></hr>
         </Row>
+        <div style={{paddingBottom: '20px', marginTop: '10px', fontWeight: 'bold', fontSize: '20px' }}>
+          Components:
+        </div>
         <Row className="mb-4">
           <Col>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Item</th>
-                  <th style={thStyle}>Description</th>
-                  <th style={thStyle}>Quantity</th>
-                  <th style={thStyle}>Price</th>
-                  <th style={thStyle}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoiceData?.items?.map((item, index) => (
-                  <tr key={index}>
-                    <td style={tdStyle}>{item.name}</td>
-                    <td style={tdStyle}>{item.description}</td>
-                    <td style={tdStyle}>{item.quantity}</td>
-                    <td style={tdStyle}>${item.price.toFixed(2)}</td>
-                    <td style={tdStyle}>${(item.price * item.quantity).toFixed(2)}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="4" style={tdStyle}>Total</td>
-                  <td style={tdStyle}>
-                    ${invoiceData?.totalPrice.toFixed(2) || '0.00'}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <ul style={listStyle}>
+              {invoiceData?.components?.map((component, index) => (
+                <li key={index} style={listItemStyle}>
+                  {component.name}
+                </li>
+              ))}
+            </ul>
+            <div style={{ borderTop: '1px solid black', paddingTop: '10px', marginTop: '10px', fontWeight: 'bold' }}>
+              Basic Amount: ₹ {invoiceData?.totalPrice || '0.00'}<br></br>
+              Tax: ₹ {((invoiceData?.totalPrice) * 1.28) - invoiceData?.totalPrice || '0.00'}<br></br>
+              Total: ₹{(invoiceData?.totalPrice * 1.28) || '0.00'} <br></br>
+              <small style={{color: 'red'}}>*Including 28% GST on basic amount of ₹{invoiceData?.totalPrice}</small>
+            </div>
           </Col>
         </Row>
+        <div style={buttonContainerStyle}>
+          <Button variant="primary" onClick={handlePrint}>
+            Download & Email Invoice
+          </Button>
+        </div>
       </div>
-      <Button
-        variant="primary"
-        onClick={handlePrint}
-        style={{ margin: '20px' }}
-      >
-        Print PDF
-      </Button>
     </Container>
   );
 };

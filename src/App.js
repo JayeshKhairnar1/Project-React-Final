@@ -18,7 +18,7 @@ const ConfirmOrder = React.lazy(() => import('./pages/ConfirmOrder'));
 const AccountCreatedResponse = React.lazy(() => import('./pages/AccountCreatedResponse'));
 const Logic1 = React.lazy(() => import('./pages/Logic1'));
 const InvoicePage = React.lazy(() => import('./pages/InvoicePage'));
-
+const MyFetch = React.lazy(()=>import ('./pages/MyFetch'));
 const ConfirmOrder1 =React.lazy(()=>import ('./pages/ConfirmOrder1')) ;
 function App() {
   return (
@@ -39,7 +39,7 @@ function App() {
           <Route path='/logic1' element={<Logic1 />} />
           <Route path='/invoicePage' element={<InvoicePage />} />
           <Route path="/confirmorder1" element={<ConfirmOrder1 />} />
-          {/* Add other routes here if needed */}
+          <Route path='/myFetch' element={<MyFetch />} />
         </Routes>
       </Suspense>
       <FooterWithConditionalRender />

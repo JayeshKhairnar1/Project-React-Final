@@ -67,7 +67,7 @@ const Configure1 = () => {
     let urls = [];
     if (category === 'S') {
       urls = [
-        `http://localhost:8080/api/vehicles/S/${modelId}`,
+       `http://localhost:8080/api/vehicles/S/${modelId}`,
         `http://localhost:8080/api/vehicles/I/${modelId}`,
         `http://localhost:8080/api/vehicles/E/${modelId}`
       ];
@@ -168,14 +168,15 @@ const Configure1 = () => {
       userId: parseInt(sessionStorage.getItem('userid')), // Retrieve user ID from session storage
       modelId,
       orderedQty: quantity,
-      altCompId: components.map(c => c.comp_id), // Collect component IDs
+      components: components.map(c => ({ name: c.comp_name, price: c.comp_price })), // Collect component names and prices
       modelPrice: priceData,
-      totalPrice: Math.round((priceData * quantity) * 1.28) // Calculate total price including GST
+      totalPrice: Math.round((priceData * quantity) ) // Calculate total price including GST
     };
-
+  
     // Navigate to InvoicePage and pass invoiceData
     navigate('/invoicePage', { state: { invoiceData } });
   };
+  
 
   return (
     <Container style={containerStyle}>
