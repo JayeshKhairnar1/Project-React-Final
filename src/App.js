@@ -17,13 +17,13 @@ const Configure2 = React.lazy(() => import('./pages/Configure2'));
 const ConfirmOrder = React.lazy(() => import('./pages/ConfirmOrder'));
 const AccountCreatedResponse = React.lazy(() => import('./pages/AccountCreatedResponse'));
 const Logic1 = React.lazy(() => import('./pages/Logic1'));
-const Invoice = React.lazy(() => import('./pages/Invoice'));
+const InvoicePage = React.lazy(() => import('./pages/InvoicePage'));
 
 const ConfirmOrder1 =React.lazy(()=>import ('./pages/ConfirmOrder1')) ;
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+     <Navbar />
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path='/' element={<Home />} />
@@ -37,7 +37,7 @@ function App() {
           <Route path='/confirmorder' element={<ConfirmOrder />} />
           <Route path='/accountcreatedresponse' element={<AccountCreatedResponse />} />
           <Route path='/logic1' element={<Logic1 />} />
-          <Route path='/invoice' element={<Invoice />} />
+          <Route path='/invoicePage' element={<InvoicePage />} />
           <Route path="/confirmorder1" element={<ConfirmOrder1 />} />
           {/* Add other routes here if needed */}
         </Routes>

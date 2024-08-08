@@ -9,7 +9,7 @@ const Configure2 = () => {
   const [accessoryOptions, setAccessoryOptions] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const location = useLocation();
-  const { modelId, quantity } = location.state || {};
+  const { modelId, quantity, price } = location.state || {};
 
   useEffect(() => {
     if (modelId) {
@@ -91,20 +91,18 @@ const Configure2 = () => {
   };
 
   const handleDropdownChange = (item, selectedOption) => {
-    const existingItemIndex = selectedItems.findIndex(selectedItem => selectedItem.id === item.comp_id);
     const newItem = {
       id: item.comp_id,
       name: `${item.comp_name}: ${selectedOption.label.split(' - ')[0]}`,
       price: parseFloat(selectedOption.label.split(' - ₹')[1]),
     };
-    
-    if (existingItemIndex > -1) {
-      const updatedItems = [...selectedItems];
-      updatedItems[existingItemIndex] = newItem;
-      setSelectedItems(updatedItems);
-    } else {
-      setSelectedItems(prevItems => [...prevItems, newItem]);
-    }
+
+    setSelectedItems(prevItems => {
+      // Remove any existing selection for the same item
+      const updatedItems = prevItems.filter(selectedItem => selectedItem.id !== item.comp_id);
+      // Add the new selection
+      return [...updatedItems, newItem];
+    });
   };
 
   const handleCheckboxChange = (option, isChecked) => {
@@ -134,20 +132,26 @@ const Configure2 = () => {
         >
           {item.comp_name}
           {item.is_configurable === 'Y' && selectedCategory !== 'S' && (
-            <select 
-              style={{ marginLeft: '10px' }}
-              onChange={(e) => {
-                const selectedOption = item.dropdownOptions.find(opt => opt.value === e.target.value);
-                handleDropdownChange(item, selectedOption);
-              }}
-            >
-              <option value="">Select an option</option>
+            <div style={{ marginLeft: '10px' }}>
               {item.dropdownOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <div key={option.value}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.some(selectedItem => selectedItem.id === item.comp_id && selectedItem.price === parseFloat(option.label.split(' - ₹')[1]))}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          handleDropdownChange(item, option);
+                        } else {
+                          setSelectedItems(prevItems => prevItems.filter(selectedItem => !(selectedItem.id === item.comp_id && selectedItem.price === parseFloat(option.label.split(' - ₹')[1]))));
+                        }
+                      }}
+                    />
+                    {option.label}
+                  </label>
+                </div>
               ))}
-            </select>
+            </div>
           )}
         </div>
       ))}
@@ -170,26 +174,71 @@ const Configure2 = () => {
     </div>
   );
 
-  const renderSelectedItems = () => (
-    <div style={selectedItemsContainerStyle}>
-      <h4>Selected Items</h4>
-      {selectedItems.map(item => (
-        <div key={item.id} style={selectedItemStyle}>
-          <label>
-            <input 
-              type="checkbox" 
-              checked 
-              onChange={() => handleRemoveItem(item.id)} 
-            />
-            {item.name} - ₹{item.price}
-          </label>
+  const renderSelectedItems = () => {
+    const basePriceEntry = {
+      id: 'base-price',
+      name: 'Base Price',
+      price: price || 0, // Use the base price from location.state
+    };
+
+    // Base price total
+    const basePriceTotal = basePriceEntry.price * quantity;
+    
+    // Total for selected items
+    const totalSelectedItems = selectedItems.reduce((sum, item) => sum + item.price * quantity, 0);
+
+    // Net payable
+    const totalPrice = basePriceTotal + totalSelectedItems;
+
+    return (
+      <div style={selectedItemsContainerStyle}>
+        <h4>Selected Items</h4>
+        <div style={selectionBoxStyle}>
+          <div style={leftSideStyle}>
+            <div style={itemStyle}>
+              <label>
+                <input 
+                  type="checkbox" 
+                  checked 
+                  readOnly
+                />
+                {basePriceEntry.name} - ₹{basePriceEntry.price}
+              </label>
+            </div>
+            {selectedItems.map(item => (
+              <div key={item.id} style={itemStyle}>
+                <label>
+                  <input 
+                    type="checkbox" 
+                    checked 
+                    onChange={() => handleRemoveItem(item.id)} 
+                  />
+                  {item.name} - ₹{item.price}
+                </label>
+              </div>
+            ))}
+          </div>
+          <div style={rightSideStyle}>
+            <div style={itemStyle}>
+              <label>
+                {basePriceEntry.name} - ₹{basePriceEntry.price} x {quantity} = ₹{basePriceTotal}
+              </label>
+            </div>
+            {selectedItems.map(item => (
+              <div key={item.id} style={itemStyle}>
+                <label>
+                  {item.name} - ₹{item.price} x {quantity} = ₹{item.price * quantity}
+                </label>
+              </div>
+            ))}
+            <div style={totalStyle}>
+              Net Payable: ₹{totalPrice}
+            </div>
+          </div>
         </div>
-      ))}
-      <div style={totalStyle}>
-        Total: ₹{selectedItems.reduce((sum, item) => sum + item.price, 0)}
       </div>
-    </div>
-  );
+    );
+  };
 
   const ImageBox = ({ imageUrl }) => (
     <div style={imageBoxStyle}>
@@ -218,6 +267,69 @@ const Configure2 = () => {
     borderRadius: '5px',
   };
 
+  const outerContainerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '20px',
+  };
+
+  const imageAndButtonsContainerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+  };
+
+  const navbarStyle = {
+    marginTop: '20px',
+    width: '100%',
+  };
+
+  const footerButtonStyle = {
+    margin: '0 10px',
+    fontWeight: 'bold',
+  };
+
+  const infoContainerStyle = {
+    width: '100%',
+    maxWidth: '1200px',
+    marginTop: '20px',
+  };
+
+  const selectedItemsContainerStyle = {
+    marginTop: '20px',
+    padding: '10px',
+    border: '1px solid #ddd',
+    borderRadius: '5px',
+    width: '100%',
+    maxWidth: '1200px',
+  };
+
+  const selectionBoxStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+  };
+
+  const leftSideStyle = {
+    width: '50%',
+    paddingRight: '10px',
+    borderRight: '1px solid #ddd',
+  };
+
+  const rightSideStyle = {
+    width: '50%',
+    paddingLeft: '10px',
+  };
+
+  const itemStyle = {
+    padding: '5px 0',
+  };
+
+  const totalStyle = {
+    marginTop: '10px',
+    fontWeight: 'bold',
+  };
+
   return (
     <div style={outerContainerStyle}>
       <div style={imageAndButtonsContainerStyle}>
@@ -234,7 +346,7 @@ const Configure2 = () => {
             <Nav.Link onClick={() => handleButtonClick('I')} style={footerButtonStyle}>Interior</Nav.Link>
             <Nav.Link onClick={() => handleButtonClick('E')} style={footerButtonStyle}>Exterior</Nav.Link>
             <Nav.Link onClick={() => handleButtonClick('A')} style={footerButtonStyle}>Accessories</Nav.Link>
-            <Nav.Link style={footerButtonStyle}>Cancel</Nav.Link>
+            <Nav.Link onClick={() => setSelectedItems([])} style={footerButtonStyle}>Cancel</Nav.Link>
             <Nav.Link style={footerButtonStyle}>Confirm Order</Nav.Link>
           </Nav>
         </Navbar>
@@ -246,60 +358,6 @@ const Configure2 = () => {
       {renderSelectedItems()}
     </div>
   );
-};
-
-const outerContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: '20px',
-  fontFamily: 'Arial, sans-serif',
-};
-
-const imageAndButtonsContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  width: '100%',
-  marginBottom: '20px', // Add margin below the buttons bar to separate it from the info container
-};
-
-const infoContainerStyle = {
-  flex: 1,
-  padding: '10px',
-  width: '100%',
-};
-
-const navbarStyle = {
-  width: '100%',
-  marginBottom: '20px', // Add margin below the buttons bar
-};
-
-const footerButtonStyle = {
-  margin: '0 10px',
-  padding: '10px 20px',
-  backgroundColor: 'yellow',
-  border: 'none',
-  color: 'black',
-  fontWeight: 'bold',
-};
-
-const selectedItemsContainerStyle = {
-  width: '300px', // Fixed width for the selected items container
-  backgroundColor: 'lightblue', // Light blue background
-  padding: '10px',
-  borderRadius: '5px',
-  marginTop: '20px', // Margin above the selected items container
-};
-
-const selectedItemStyle = {
-  padding: '5px',
-  marginBottom: '5px',
-};
-
-const totalStyle = {
-  marginTop: '10px',
-  fontWeight: 'bold',
 };
 
 export default Configure2;

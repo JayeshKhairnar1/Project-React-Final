@@ -1,17 +1,22 @@
 import React from 'react';
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-// Navbar component
 const CustomNavbar = () => {
   const location = useLocation(); // Hook to get the current route
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   const itemList = [
-    { text: 'Home', to: '/' },
-    { text: 'About', to: '/about' },
-    { text: 'Contact', to: '/contact' },
-    { text: 'Login', to: '/login' },
-    { text: 'Register', to: '/register' }
+    { text: t('navbarHome'), to: '/' },
+    { text: t('navbarAbout'), to: '/about' },
+    { text: t('navbarContact'), to: '/contact' },
+    { text: t('navbarLogin'), to: '/login' },
+    { text: t('navbarRegister'), to: '/register' }
   ];
 
   return (
@@ -45,6 +50,18 @@ const CustomNavbar = () => {
                 </Nav.Link>
               );
             })}
+
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="dropdown-basic">
+                Language
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={() => changeLanguage('en')}>English</Dropdown.Item>
+                <Dropdown.Item onClick={() => changeLanguage('hi')}>हिंदी</Dropdown.Item>
+                <Dropdown.Item onClick={() => changeLanguage('de')}>Deutsch</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>

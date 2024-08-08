@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col, Button, Table } from 'react-bootstrap';
 
 const Configure1 = () => {
   const [carData, setCarData] = useState(null);
@@ -93,80 +93,144 @@ const Configure1 = () => {
 
   const buttonStyle = {
     margin: '0 5px',
-    padding: '5px 10px',
-    backgroundColor: 'yellow',
+    padding: '10px 20px',
+    backgroundColor: '#007bff',
     border: 'none',
-    color: 'black',
-    fontWeight: 'bold'
+    color: 'white',
+    fontWeight: 'bold',
+    borderRadius: '5px',
   };
 
   const containerStyle = {
-    marginTop: '10px',
-    position: 'relative'
+    marginTop: '20px',
   };
 
   const boxStyle = {
-    padding: '10px',
+    padding: '15px',
     border: '1px solid #ddd',
-    borderRadius: '5px',
-    minHeight: '100px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#e7f0ff',
-    marginBottom: '10px'
+    borderRadius: '8px',
+    backgroundColor: '#f8f9fa',
+    marginBottom: '15px',
   };
 
   const priceBoxStyle = {
-    marginTop: '10px',
-    padding: '20px',
+    marginTop: '30px',
+    padding: '15px',
     border: '1px solid #ddd',
-    borderRadius: '5px',
+    borderRadius: '8px',
     backgroundColor: '#e7f0f0',
     color: '#333',
     fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: '16px',
   };
 
   const imageStyle = {
     width: '100%',
+    maxWidth: '600px', // Increased size for better space utilization
     height: 'auto',
-    borderRadius: '5px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    marginBottom: '15px',
   };
 
-  const cardStyle = (isConfigurable) => ({
-    margin: '5px',
-    padding: '5px',
+  const componentTableStyle = {
+    width: '100%',
+    borderCollapse: 'collapse',
+    marginBottom: '15px',
+  };
+
+  const tableHeaderStyle = {
+    backgroundColor: '#007bff',
+    color: 'white',
     textAlign: 'center',
-    backgroundColor: isConfigurable ? '#d4edda' : '#f8f9fa',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    minWidth: '100px'
-  });
-
-  const componentListStyle = {
-    ...boxStyle,
-    minHeight: '200px',
-    backgroundColor: '#f8f9f9',
-    padding: '10px',
-    overflowY: 'auto',
   };
 
-  const listStyle = {
-    listStyleType: 'disc',
-    paddingLeft: '20px'
+  const tableRowStyle = {
+    backgroundColor: '#f8f9fa',
+    textAlign: 'center',
+  };
+
+  const alternateRowStyle = {
+    backgroundColor: '#e9ecef',
+    textAlign: 'center',
   };
 
   const titleStyle = {
-    fontSize: '18px',
+    fontSize: '20px',
     fontWeight: 'bold',
-    marginBottom: '10px',
-    color: '#333'
+    marginBottom: '15px',
+    color: '#333',
+  };
+
+  const handleConfirmOrder = () => {
+    const invoiceData = {
+      userId: parseInt(sessionStorage.getItem('userid')), // Retrieve user ID from session storage
+      modelId,
+      orderedQty: quantity,
+      altCompId: components.map(c => c.comp_id), // Collect component IDs
+      modelPrice: priceData,
+      totalPrice: Math.round((priceData * quantity) * 1.28) // Calculate total price including GST
+    };
+
+    // Navigate to InvoicePage and pass invoiceData
+    navigate('/invoicePage', { state: { invoiceData } });
   };
 
   return (
     <Container style={containerStyle}>
       <Row>
-        <Col md={3}>
+        <Col md={4}>
+          <div>
+            <h5 style={titleStyle}>Standard Components</h5>
+            <div style={boxStyle}>
+              {componentsLoading ? (
+                <p>Loading components...</p>
+              ) : componentsError ? (
+                <p>{componentsError}</p>
+              ) : components.length > 0 ? (
+                <Table style={componentTableStyle}>
+                  <thead style={tableHeaderStyle}>
+                    <tr>
+                      <th>Component Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {components.map((component, index) => (
+                      <tr
+                        key={component.comp_id}
+                        style={index % 2 === 0 ? tableRowStyle : alternateRowStyle}
+                      >
+                        <td>{component.comp_name}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <p>No components available</p>
+              )}
+            </div>
+          </div>
+        </Col>
+        <Col md={8}>
+          {carData ? (
+            <img 
+              src={`${process.env.PUBLIC_URL}${carData.path}`} // Ensure this path is correct
+              alt={carData.carName} 
+              style={imageStyle} 
+            />
+          ) : (
+            <p>No image available</p>
+          )}
+          {priceData && quantity && (
+            <div style={priceBoxStyle}>
+              Using Standard Default Configuration Base Price: ₹{priceData} x {quantity} = ₹{priceData * quantity}
+            </div>
+          )}
+        </Col>
+      </Row>
+      <Row>
+        <Col>
           <div>
             <h5 style={titleStyle}>Description</h5>
             <div style={boxStyle}>
@@ -181,47 +245,13 @@ const Configure1 = () => {
               )}
             </div>
           </div>
-          <div>
-            <h5 style={titleStyle}>Standard Components</h5>
-            <div style={boxStyle}>
-              {componentsLoading ? (
-                <p>Loading components...</p>
-              ) : componentsError ? (
-                <p>{componentsError}</p>
-              ) : components.length > 0 ? (
-                <ul style={listStyle}>
-                  {components.map(component => (
-                    <li key={component.comp_id}>{component.comp_name}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No components available</p>
-              )}
-            </div>
-          </div>
-        </Col>
-        <Col md={9}>
-          {carData ? (
-            <img 
-              src={`${process.env.PUBLIC_URL}${carData.path}`} 
-              alt={carData.carName} 
-              style={imageStyle} 
-            />
-          ) : (
-            <p>No image available</p>
-          )}
-          {priceData && quantity && (
-            <div style={priceBoxStyle}>
-              Base Price: ₹{priceData} x {quantity} = ₹{priceData * quantity}
-            </div>
-          )}
         </Col>
       </Row>
-      <Row className="mt-2">
+      <Row className="mt-3">
         <Col className="d-flex justify-content-center">
           <Button 
             style={buttonStyle} 
-            onClick={() => navigate('/confirmorder1', { state: { modelId, quantity, price: priceData } })}
+            onClick={handleConfirmOrder}
           >
             Confirm Order
           </Button>
