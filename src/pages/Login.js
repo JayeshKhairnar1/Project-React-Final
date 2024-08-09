@@ -80,7 +80,7 @@ const LoginPage = () => {
 
       if (response.ok) {
         sessionStorage.setItem('userid', userid); // Store userid in sessionStorage
-
+        sessionStorage.setItem('loggedIn', true);
         window.location.href = '/dropDownPage'; // Redirect to dropdownpage page upon successful login
       } else {
         const result = await response.text();

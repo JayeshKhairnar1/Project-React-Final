@@ -15,7 +15,7 @@ const InvoicePage = () => {
   const [userData, setUserData] = useState(null);
 
   // Retrieve userId from session storage
-  const userId = sessionStorage.getItem('userid') || 'N/A';
+  const userId = sessionStorage.getItem('userid');
 
   // Fetch user data from API on page load
   useEffect(() => {
@@ -33,23 +33,32 @@ const InvoicePage = () => {
       //const date = new Date().toLocaleDateString();
       const time = new Date().getHours() + '' + new Date().getMinutes() + new Date().getSeconds();
       const pdfName = 'invoice' + userId + time;
+      const abspdfpath="C:/Users/Lenovo/Downloads/"+pdfName+".pdf";
       pdf.save(pdfName);
+      console.log(abspdfpath);
+      console.log(pdfName);
 
-      // API call to send the email with the invoice
-      fetch('http://localhost:8080/api/email/mailInvoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sendTo: userData?.email,
-          invoiceName: pdfName,
-        }),
-      })
-      .then(response => response.json())
-      .then(data => console.log('Email sent:', data))
-      .catch(error => console.error('Error sending email:', error));
-    });
+//
+// Delay API call by 5 seconds
+setTimeout(() => {
+  // API call to send the email with the invoice
+  fetch('http://localhost:8080/api/email/mailInvoice', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sendTo: userData?.email,
+      path: abspdfpath // Send the PDF name or URL if your server can handle it
+    }),
+  })
+  .then(response => response.json())
+  .then(data => console.log('Email sent:', data))
+  .catch(error => console.error('Error sending email:', error));
+}, 2000); 
+
+ });
+    
   };
 
   const containerStyle = {
@@ -143,12 +152,13 @@ const InvoicePage = () => {
             </div>
           </Col>
         </Row>
-        <div style={buttonContainerStyle}>
+        
+      </div>
+      <div style={buttonContainerStyle}>
           <Button variant="primary" onClick={handlePrint}>
             Download & Email Invoice
           </Button>
         </div>
-      </div>
     </Container>
   );
 };

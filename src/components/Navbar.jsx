@@ -1,20 +1,35 @@
 import React from 'react';
 import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const CustomNavbar = () => {
   const location = useLocation(); // Hook to get the current route
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('userid');
+    sessionStorage.removeItem('loggedIn');
+    // Optional: Add a slight delay before redirecting to ensure session storage is cleared
+    setTimeout(() => {
+      navigate('/login');
+      window.location.reload(); // Force a page refresh to clear any state
+    }, 100);
+  };
+
+  const isLoggedIn = sessionStorage.getItem('loggedIn') === 'true';
+
   const itemList = [
     { text: t('navbarHome'), to: '/' },
     { text: t('navbarAbout'), to: '/about' },
     { text: t('navbarContact'), to: '/contact' },
+    isLoggedIn ? 
+    { text: t('Logout'), to: '#', onClick: handleLogout } : 
     { text: t('navbarLogin'), to: '/login' },
     { text: t('navbarRegister'), to: '/register' }
   ];
@@ -29,7 +44,7 @@ const CustomNavbar = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             {itemList.map((item) => {
-              const { text, to } = item;
+              const { text, to, onClick } = item;
               const isActive = location.pathname === to; // Check if the current route is active
 
               return (
@@ -37,6 +52,7 @@ const CustomNavbar = () => {
                   key={text}
                   as={Link}
                   to={to}
+                  onClick={onClick}
                   style={{
                     color: isActive ? '#fff' : '#ccc',
                     borderBottom: isActive ? '2px solid #fff' : 'none',
@@ -57,6 +73,7 @@ const CustomNavbar = () => {
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
+                <Dropdown.Item onClick={() => changeLanguage('mr')}> मराठी</Dropdown.Item>
                 <Dropdown.Item onClick={() => changeLanguage('en')}>English</Dropdown.Item>
                 <Dropdown.Item onClick={() => changeLanguage('hi')}>हिंदी</Dropdown.Item>
                 <Dropdown.Item onClick={() => changeLanguage('de')}>Deutsch</Dropdown.Item>

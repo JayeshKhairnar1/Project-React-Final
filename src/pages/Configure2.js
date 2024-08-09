@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar, Nav } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Configure2 = () => {
   const [vehicleDetails, setVehicleDetails] = useState(null);
@@ -9,8 +9,8 @@ const Configure2 = () => {
   const [accessoryOptions, setAccessoryOptions] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const location = useLocation();
+  const navigate = useNavigate();
   const { modelId, quantity, price } = location.state || {};
-  console.log(modelId);
 
   useEffect(() => {
     if (modelId) {
@@ -69,7 +69,6 @@ const Configure2 = () => {
       console.error('Error fetching items:', error);
     }
   };
-  
 
   const fetchDropdownOptions = async (modelId, compId) => {
     try {
@@ -130,6 +129,17 @@ const Configure2 = () => {
 
   const handleRemoveItem = (itemId) => {
     setSelectedItems(prevItems => prevItems.filter(item => item.id !== itemId));
+  };
+
+  const handleConfirmOrder = () => {
+    // Store data in session storage
+    sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+    sessionStorage.setItem('myOrder', JSON.stringify(selectedItems));
+    sessionStorage.setItem('myPrice', JSON.stringify(price));
+    sessionStorage.setItem('myQuantity', JSON.stringify(quantity));
+    
+    // Navigate to the Confirm Order page
+    navigate('/confirmOrder');
   };
 
   const renderItemList = () => (
@@ -205,7 +215,6 @@ const Configure2 = () => {
         <h4>Selected Items</h4>
         <div style={selectionBoxStyle}>
           <div style={leftSideStyle}>
-            
             {selectedItems.map(item => (
               <div key={item.id} style={itemStyle}>
                 <label>
@@ -258,7 +267,7 @@ const Configure2 = () => {
           <Nav.Link onClick={() => handleButtonClick('E')} style={selectedCategory === 'E' ? { ...footerButtonStyle, ...activeButtonStyle } : footerButtonStyle}>Exterior</Nav.Link>
           <Nav.Link onClick={() => handleButtonClick('A')} style={selectedCategory === 'A' ? { ...footerButtonStyle, ...activeButtonStyle } : footerButtonStyle}>Accessories</Nav.Link>
           <Nav.Link onClick={() => setSelectedItems([])} style={footerButtonStyle}>Cancel</Nav.Link>
-          <Nav.Link style={footerButtonStyle}>Confirm Order</Nav.Link>
+          <Nav.Link onClick={handleConfirmOrder} style={footerButtonStyle}>Confirm Order</Nav.Link>
         </Nav>
       </Navbar>
       <div style={containerStyle}>
