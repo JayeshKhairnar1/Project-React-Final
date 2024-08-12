@@ -26,11 +26,13 @@ const InvoicePage = () => {
   }, [userId]);
 
   const handlePrint = () => {
-    html2canvas(invoiceRef.current).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
+    html2canvas(invoiceRef.current, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/jpeg', 0.5); // Reduce quality for smaller size
       const pdf = new jsPDF();
-      pdf.addImage(imgData, 'PNG', 15, 10, 180, 160);
-      //const date = new Date().toLocaleDateString();
+
+      // Adjust the image size and position as needed
+      pdf.addImage(imgData, 'JPEG', 15, 10, 180, 160, '', 'FAST'); // Use 'FAST' for compression
+
       const time = new Date().getHours() + '' + new Date().getMinutes() + new Date().getSeconds();
       const pdfName = 'invoice' + userId + time;
       const abspdfpath="C:/Users/Lenovo/Downloads/"+pdfName+".pdf";
@@ -38,27 +40,24 @@ const InvoicePage = () => {
       console.log(abspdfpath);
       console.log(pdfName);
 
-//
-// Delay API call by 5 seconds
-setTimeout(() => {
-  // API call to send the email with the invoice
-  fetch('http://localhost:8080/api/email/mailInvoice', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      sendTo: userData?.email,
-      path: abspdfpath // Send the PDF name or URL if your server can handle it
-    }),
-  })
-  .then(response => response.json())
-  .then(data => console.log('Email sent:', data))
-  .catch(error => console.error('Error sending email:', error));
-}, 2000); 
-
- });
-    
+      // Delay API call by 2 seconds
+      setTimeout(() => {
+        // API call to send the email with the invoice
+        fetch('http://localhost:8080/api/email/mailInvoice', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sendTo: userData?.email,
+            path: abspdfpath // Send the PDF name
+          }),
+        })
+          .then(response => response.json())
+          .then(data => console.log('Email sent:', data))
+          .catch(error => console.error('Error sending email:', error));
+      }, 1000);
+    });
   };
 
   const containerStyle = {

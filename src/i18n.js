@@ -11,7 +11,7 @@ i18n
     fallbackLng: 'en',
     debug: true,
     interpolation: {
-      escapeValue: false, // React already does escaping
+      escapeValue: false, 
     },
     backend: {
       loadPath: '/locales/{{lng}}.json',

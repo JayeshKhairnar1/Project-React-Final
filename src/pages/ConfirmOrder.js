@@ -33,11 +33,12 @@ const ConfirmOrder = () => {
   const gstRate = 0.28;
   const gstAmount = totalWithoutGST * gstRate;
   const totalWithGST = totalWithoutGST + gstAmount;
-
+/*
   const handleDownload = () => {
     html2canvas(invoiceRef.current).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF();
+      
       pdf.addImage(imgData, 'PNG', 15, 10, 180, 160);
       const time = new Date().getHours() + '' + new Date().getMinutes() + new Date().getSeconds();
       const pdfName = 'invoice' + userId + time;
@@ -62,6 +63,43 @@ const ConfirmOrder = () => {
       }, 2000);
     });
   };
+*/
+const handleDownload = () => {
+  html2canvas(invoiceRef.current, { scale: 1.5 }).then((canvas) => {
+    const imgData = canvas.toDataURL('image/jpeg', 0.5); // Reduce quality to 50%
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true, // Enable compression
+    });
+    
+    pdf.addImage(imgData, 'JPEG', 15, 10, 180, 160, undefined, 'FAST'); // Use JPEG for better compression
+    const time = new Date().getHours() + '' + new Date().getMinutes() + new Date().getSeconds();
+    const pdfName = 'invoice' + userId + time;
+   
+      const abspdfpath="C:/Users/Lenovo/Downloads/"+pdfName+".pdf";
+    pdf.save(pdfName);
+
+    setTimeout(() => {
+      fetch('http://localhost:8080/api/email/mailInvoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sendTo: userData?.email,
+          path: abspdfpath,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => console.log('Email sent:', data))
+      .catch(error => console.error('Error sending email:', error));
+    }, 1000);
+  });
+};
+
+
 
   return (
     <Container fluid>
